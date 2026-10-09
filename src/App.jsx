@@ -1,13 +1,18 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, Check, ChevronDown, ChevronRight, Clipboard, Code2, Menu, Play, RotateCcw, Sparkles, X } from 'lucide-react'
 import { groups, topics, topicOrder } from './topics.jsx'
 import PerformanceChart from './PerformanceChart.jsx'
 import { interviewQuestions } from './interviewQuestions.js'
 import { virtualLibraryDemos } from './VirtualLibraryDemos.jsx'
+import { archiveCategories } from './archiveQuestions.js'
+import ArchivePage from './ArchivePage.jsx'
 
 function routeFromHash() {
   const value = window.location.hash.replace(/^#\/?/, '')
   if (value === 'about') return 'about'
+  if (value === 'archive') return 'archive'
+  const archiveMatch = value.match(/^archive\/([^/]+)$/)
+  if (archiveMatch && archiveCategories.some(category => category.id === archiveMatch[1])) return value
   const match = value.match(/^topic\/(.+)$/)
   return match && topics[match[1]] ? match[1] : 'components'
 }
@@ -37,6 +42,13 @@ function Header({ current, onNavigate }) {
             <div className="dropdown-topics">{group.topics.map(id => <button role="menuitem" key={id} className={current === id ? 'is-selected' : ''} onClick={() => select(id)}><span>{topics[id].number}</span>{topics[id].title}<ArrowUpRight size={14} /></button>)}</div>
           </div>
         </div>)}
+        <div className={'nav-group archive-nav' + (openMenu === 'archive' ? ' is-open' : '')} onMouseEnter={() => { if (desktopHover()) setOpenMenu('archive') }} onMouseLeave={() => { if (desktopHover()) setOpenMenu(null) }}>
+          <button className={'nav-trigger' + (current.startsWith('archive') ? ' is-current' : '')} aria-expanded={openMenu === 'archive'} onClick={() => { if (desktopHover()) select('archive'); else setOpenMenu(value => value === 'archive' ? null : 'archive') }}>面试题归档 <ChevronDown size={14} strokeWidth={1.8} /></button>
+          <div className="nav-dropdown" role="menu" aria-label="面试题归档分类">
+            <div className="dropdown-heading"><span>INTERVIEW ARCHIVE</span><strong>2024—2026 常见问法</strong><p>按方向复习，点开查看详细思路。</p></div>
+            <div className="dropdown-topics"><button role="menuitem" onClick={() => select('archive')}>全部题目 <ArrowUpRight size={14} /></button>{archiveCategories.map(category => <button role="menuitem" key={category.id} onClick={() => select('archive/' + category.id)}>{category.short}<ArrowUpRight size={14} /></button>)}</div>
+          </div>
+        </div>
         <button className={`about-nav ${current === 'about' ? 'is-current' : ''}`} onClick={() => select('about')}>关于</button>
       </nav>
       <div className="header-right"><span className="header-note"><span className="online-dot" /> 一起保持好奇</span><button className="header-start" onClick={() => select('components')}>开始探索 <ArrowUpRight size={15} /></button></div>
@@ -168,16 +180,43 @@ function Footer() {
 
 export default function App() {
   const [current, setCurrent] = useState(routeFromHash)
+  const pendingArchiveScroll = useRef(null)
   useEffect(() => {
     const update = () => setCurrent(routeFromHash())
     window.addEventListener('hashchange', update)
     return () => window.removeEventListener('hashchange', update)
   }, [])
+  useEffect(() => {
+    if (pendingArchiveScroll.current !== current) return
+    pendingArchiveScroll.current = null
+    document.getElementById('archive-browser')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [current])
   const navigate = id => {
+    if (id === 'archive' || id.startsWith('archive/')) {
+      if (current === id) {
+        window.requestAnimationFrame(() => document.getElementById('archive-browser')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+      } else {
+        pendingArchiveScroll.current = id
+      }
+      const hash = '#/' + id
+      if (window.location.hash === hash) setCurrent(id)
+      else window.location.hash = hash
+      return
+    }
     const hash = id === 'about' ? '#/about' : `#/topic/${id}`
     if (window.location.hash === hash) setCurrent(id)
     else window.location.hash = hash
     document.getElementById('learning-area')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
-  return <div className="app-shell"><Header current={current} onNavigate={navigate} /><main><Hero current={current} onNavigate={navigate} /><div className="content-shell" id="learning-area"><Sidebar current={current} onNavigate={navigate} />{current === 'about' ? <AboutPage /> : <TopicPage id={current} onNavigate={navigate} />}</div></main><Footer /></div>
+  const isArchive = current === 'archive' || current.startsWith('archive/')
+  return <div className="app-shell">
+    <Header current={current} onNavigate={navigate} />
+    <main>
+      {!isArchive && <Hero current={current} onNavigate={navigate} />}
+      <div className={'content-shell' + (isArchive ? ' archive-shell' : '')} id="learning-area">
+        {isArchive ? <ArchivePage categoryId={current.split('/')[1] || null} onSelectCategory={category => navigate(category ? 'archive/' + category : 'archive')} /> : <><Sidebar current={current} onNavigate={navigate} />{current === 'about' ? <AboutPage /> : <TopicPage id={current} onNavigate={navigate} />}</>}
+      </div>
+    </main>
+    <Footer />
+  </div>
 }
