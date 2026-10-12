@@ -80,6 +80,16 @@ export const interviewQuestions = {
       answer: '只有组件上方没有匹配的 Provider 时，useContext 才会读取默认值；Provider 显式传入 undefined 不会退回默认值。',
     },
   ],
+  redux: [
+    {
+      question: 'Redux Toolkit 的 reducer 里为什么可以写 state.completed += 1？',
+      answer: 'createSlice 内部使用 Immer 处理这种写法：开发者看起来在修改草稿，最终仍会生成符合 Redux 不可变更新要求的新状态。不要在普通 reducer 中直接修改原状态。',
+    },
+    {
+      question: 'Redux、Context 和 useState 应该如何选择？',
+      answer: '组件自己的临时状态优先用 useState。Context 适合向后代传递主题、语言等值；当共享状态有较复杂的更新规则、涉及多个页面或需要集中追踪 action 时，Redux 更有价值。Context 本身不提供 Redux 的 reducer、开发工具和更新约定。',
+    },
+  ],
   'virtual-list': [
     {
       question: 'overscan 缓冲项越多越好吗？',

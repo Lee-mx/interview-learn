@@ -1,5 +1,9 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRight, Check, CircleHelp, Leaf, Minus, Plus, RotateCcw, Sparkles, Trash2 } from 'lucide-react'
+import ReduxDemo from './reduxDemo/App.jsx'
+import reduxAppCode from './reduxDemo/App.jsx?raw'
+import reduxWidgetsCode from './reduxDemo/ProgressWidgets.jsx?raw'
+import reduxStoreCode from './reduxDemo/store.js?raw'
 
 const softButton = 'rounded-xl border border-[#cfdfce] bg-white px-4 py-2.5 text-sm font-medium text-[#315b46] shadow-sm transition hover:border-[#96bc9d] hover:bg-[#f5fbf2] active:scale-[.98]'
 const solidButton = 'rounded-xl bg-[#326f51] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#245a41] active:scale-[.98]'
@@ -170,7 +174,7 @@ function ModuleDemo() {
 
 export const groups = [
   { id: 'basics', title: 'React 基础', en: 'THE FOUNDATIONS', description: '从组件出发，理解界面如何由数据驱动。', topics: ['components', 'props', 'state', 'conditional', 'lists'] },
-  { id: 'advanced', title: 'React 进阶', en: 'GO A LITTLE DEEPER', description: '处理副作用、派生数据和跨层级共享。', topics: ['effect', 'memo', 'context'] },
+  { id: 'advanced', title: 'React 进阶', en: 'GO A LITTLE DEEPER', description: '处理副作用、派生数据和跨层级共享。', topics: ['effect', 'memo', 'context', 'redux'] },
   { id: 'performance', title: '性能优化', en: 'MAKE IT FEEL FAST', description: '从渲染数量入手，让大量数据也能顺畅呈现。', topics: ['virtual-list'] },
   { id: 'vite', title: 'Vite 工程化', en: 'BUILD WITH VITE', description: '让开发与构建过程更轻快。', topics: ['env', 'modules'] },
 ]
@@ -232,8 +236,19 @@ export const topics = {
     question: 'Context 是否应该替代所有 props？', answer: '不需要。局部、明确的数据传递仍用 props；多个层级都需要的数据才适合 Context。',
     code: `import { createContext, useContext, useState } from 'react';\n\nconst ThemeContext = createContext('light');\n\nfunction ThemeCard() {\n  const theme = useContext(ThemeContext);\n  return <div>当前主题：{theme}</div>;\n}\n\nexport default function App() {\n  const [theme, setTheme] = useState('light');\n  return (\n    <ThemeContext.Provider value={theme}>\n      <ThemeCard />\n      <button onClick={() => setTheme(\n        current => current === 'light' ? 'dark' : 'light'\n      )}>切换主题</button>\n    </ThemeContext.Provider>\n  );\n}`, Demo: ContextDemo,
   },
+  redux: {
+    group: 'advanced', number: '09', title: 'Redux 状态管理', subtitle: '从业务输入到 action.payload，再到共享状态。', time: '7 min',
+    lead: 'Redux 把跨组件共享的状态放进 store。业务组件从输入或事件获得数据，调用 action creator 把数据放进 action.payload，再由 dispatch 交给 reducer 更新状态。示例把 store、业务组件和 App 分成三个真实文件。',
+    points: ['store.js 用 createSlice 定义 reducer 和 action creator，再用 configureStore 创建 store。', '业务组件调用 dispatch(addAmount(value))；value 来自输入框，reducer 从 action.payload 读取它。', 'App.jsx 用 Provider 提供 store；其他组件通过 useSelector 读取更新后的状态。'],
+    question: 'dispatch(addAmount(value)) 中的 value 从哪里来？', answer: '业务组件先从输入框得到 amount，提交时转成数字 value。addAmount(value) 生成带有 payload: value 的 action；dispatch 将它交给 store，reducer 读取 action.payload 更新状态，其他组件再通过 useSelector 读到新值。',
+    files: [
+      { name: 'App.jsx', code: reduxAppCode },
+      { name: 'ProgressWidgets.jsx', code: reduxWidgetsCode },
+      { name: 'store.js', code: reduxStoreCode },
+    ], Demo: ReduxDemo,
+  },
   'virtual-list': {
-    group: 'performance', number: '09', title: 'React 虚拟列表', subtitle: '只渲染屏幕附近的内容，而非整张长列表。', time: '12 min',
+    group: 'performance', number: '10', title: 'React 虚拟列表', subtitle: '只渲染屏幕附近的内容，而非整张长列表。', time: '12 min',
     lead: '虚拟列表会根据滚动位置计算可见区间，只挂载这个区间和少量缓冲项。一个与完整列表等高的占位容器保留滚动条长度，再把可见行放到正确位置。',
     points: ['固定行高时，可用 Math.floor(scrollTop / rowHeight) 求出首个可见项。', '上下增加 overscan 缓冲项，避免快速滚动时出现短暂空白。', '数据量仍然存在内存中；虚拟化主要减少 DOM 数量和渲染开销。'],
     solutions: [
@@ -245,14 +260,14 @@ export const topics = {
     code: `import { useRef, useState } from 'react';\n\nconst items = Array.from({ length: 10000 }, (_, i) => ({\n  id: i + 1, label: '第 ' + (i + 1) + ' 条学习记录'\n}));\nconst rowHeight = 44;\nconst viewportHeight = 220;\nconst overscan = 3;\n\nexport default function VirtualList() {\n  const viewportRef = useRef(null);\n  const [scrollTop, setScrollTop] = useState(0);\n  const first = Math.floor(scrollTop / rowHeight);\n  const start = Math.max(0, first - overscan);\n  const end = Math.min(items.length, first +\n    Math.ceil(viewportHeight / rowHeight) + overscan + 1);\n  const visible = items.slice(start, end);\n\n  function jumpTo(index) {\n    const viewport = viewportRef.current;\n    viewport.scrollTop = (index - 1) * rowHeight;\n    setScrollTop(viewport.scrollTop);\n  }\n\n  return (\n    <>\n      <div ref={viewportRef}\n        onScroll={e => setScrollTop(e.currentTarget.scrollTop)}\n        style={{ height: viewportHeight, overflowY: 'auto' }}>\n        <div style={{ height: items.length * rowHeight,\n          position: 'relative' }}>\n          {visible.map(item => (\n            <div key={item.id} style={{ position: 'absolute',\n              top: (item.id - 1) * rowHeight, height: rowHeight }}>\n              {item.label}\n            </div>\n          ))}\n        </div>\n      </div>\n      <button onClick={() => jumpTo(5000)}>跳到第 5000 条</button>\n    </>\n  );\n}`, Demo: VirtualListDemo,
   },
   env: {
-    group: 'vite', number: '10', title: '环境变量与模式', subtitle: '为不同运行环境配置不同数据。', time: '4 min',
+    group: 'vite', number: '11', title: '环境变量与模式', subtitle: '为不同运行环境配置不同数据。', time: '4 min',
     lead: 'Vite 会通过 import.meta.env 暴露内建环境信息，并根据运行模式加载对应的 .env 文件。客户端自定义变量需要 VITE_ 前缀。',
     points: ['import.meta.env.MODE 可读取当前模式。', 'import.meta.env.DEV 与 PROD 用于区分开发与生产。', 'VITE_ 变量会进入客户端构建产物，不能存放密钥。'],
     question: '为什么不能把 API 私钥写在 VITE_ 变量中？', answer: 'VITE_ 变量会被打包进客户端代码，任何访问页面的人都有机会读取。',
     code: `function EnvironmentInfo() {\n  return (\n    <dl>\n      <dt>MODE</dt>\n      <dd>{import.meta.env.MODE}</dd>\n      <dt>DEV</dt>\n      <dd>{String(import.meta.env.DEV)}</dd>\n      <dt>BASE_URL</dt>\n      <dd>{import.meta.env.BASE_URL}</dd>\n    </dl>\n  );\n}\n\n// 自定义客户端变量须以 VITE_ 开头。`, Demo: EnvDemo,
   },
   modules: {
-    group: 'vite', number: '11', title: '动态导入与拆包', subtitle: '需要时再加载，让入口更轻。', time: '4 min',
+    group: 'vite', number: '12', title: '动态导入与拆包', subtitle: '需要时再加载，让入口更轻。', time: '4 min',
     lead: 'import() 可以异步加载模块。Vite 在构建时会为动态导入创建独立代码块，浏览器在真正需要时再请求。',
     points: ['动态导入返回 Promise，可用 await 读取模块导出。', '适合低频功能、较大的工具模块或路由级拆包。', '加载中与失败状态也应该有清晰反馈。'],
     question: '静态 import 与动态 import() 有什么区别？', answer: '静态 import 在模块加载时就解析；动态 import() 在执行到该语句时才请求，并返回 Promise。',

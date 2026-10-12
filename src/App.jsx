@@ -101,16 +101,29 @@ function CodeLine({ line, number }) {
 function Workspace({ topic }) {
   const [previewKey, setPreviewKey] = useState(0)
   const [copied, setCopied] = useState(false)
+  const [activeFile, setActiveFile] = useState(0)
   const Demo = topic.Demo
-  useEffect(() => { setPreviewKey(0); setCopied(false) }, [topic])
+  const files = topic.files || [{ name: 'App.jsx', code: topic.code }]
+  const selectedFile = files[activeFile] || files[0]
+  useEffect(() => { setPreviewKey(0); setCopied(false); setActiveFile(0) }, [topic])
   const copy = async () => {
-    try { await navigator.clipboard.writeText(topic.code); setCopied(true); window.setTimeout(() => setCopied(false), 1800) }
+    try { await navigator.clipboard.writeText(selectedFile.code); setCopied(true); window.setTimeout(() => setCopied(false), 1800) }
     catch { setCopied(false) }
   }
   return <section className="workspace" aria-label="代码与效果展示">
     <div className="workspace-header"><div><span className="workspace-activity"><span /> INTERACTIVE PLAYGROUND</span><strong>看代码，也看它如何发生。</strong></div><div className="workspace-header-right"><span>React + Vite</span><Code2 size={18} /></div></div>
     <div className="workspace-grid">
-      <div className="code-pane"><div className="pane-toolbar"><div className="pane-tab"><Code2 size={16} /><span>App.jsx</span></div><button className="toolbar-button" onClick={copy} aria-label="复制代码">{copied ? <Check size={15} /> : <Clipboard size={15} />}{copied ? '已复制' : '复制代码'}</button></div><div className="code-scroll"><pre aria-label="示例代码"><code>{topic.code.split('\n').map((line, index) => <CodeLine key={index} line={line} number={index + 1} />)}</code></pre></div><div className="code-bottom"><span><span className="code-status-dot" /> JSX</span><span>UTF-8 <i /> React</span></div></div>
+      <div className="code-pane">
+        <div className="pane-toolbar">
+          <div className="pane-tab"><Code2 size={16} /><span>{topic.files ? '分文件示例' : selectedFile.name}</span></div>
+          <button className="toolbar-button" onClick={copy} aria-label={`复制 ${selectedFile.name} 代码`}>{copied ? <Check size={15} /> : <Clipboard size={15} />}{copied ? '已复制' : '复制代码'}</button>
+        </div>
+        {topic.files && <div className="flex gap-1 overflow-x-auto border-b border-[#dce8d8] bg-[#f8fbf6] px-3 py-2" role="group" aria-label="示例文件">
+          {files.map((file, index) => <button key={file.name} className={`shrink-0 rounded-md px-3 py-1.5 text-[11px] font-medium transition ${activeFile === index ? 'bg-[#dcecd5] text-[#315b46]' : 'text-[#78917c] hover:bg-[#edf3e7]'}`} aria-pressed={activeFile === index} onClick={() => { setActiveFile(index); setCopied(false) }}>{file.name}</button>)}
+        </div>}
+        <div className="code-scroll" key={selectedFile.name}><pre aria-label={`${selectedFile.name} 示例代码`}><code>{selectedFile.code.split('\n').map((line, index) => <CodeLine key={index} line={line} number={index + 1} />)}</code></pre></div>
+        <div className="code-bottom"><span><span className="code-status-dot" /> {selectedFile.name.endsWith('.jsx') ? 'JSX' : 'JS'}</span><span>UTF-8 <i /> React</span></div>
+      </div>
       <div className="preview-pane"><div className="pane-toolbar preview-toolbar"><div className="preview-title"><Play size={14} fill="currentColor" /><span>实时效果</span><span className="live-pill"><span /> LIVE</span></div><button className="toolbar-button preview-reset" onClick={() => setPreviewKey(value => value + 1)}><RotateCcw size={15} /> 重置示例</button></div><div className="preview-surface" key={previewKey}><Demo /></div><div className="preview-bottom"><span>试着点击、输入或切换，观察界面变化</span><Sparkles size={15} /></div></div>
     </div>
   </section>
