@@ -4,6 +4,11 @@ import ReduxDemo from './reduxDemo/App.jsx'
 import reduxAppCode from './reduxDemo/App.jsx?raw'
 import reduxWidgetsCode from './reduxDemo/ProgressWidgets.jsx?raw'
 import reduxStoreCode from './reduxDemo/store.js?raw'
+import ZustandDemo from './zustandDemo/App.jsx'
+import zustandAppCode from './zustandDemo/App.jsx?raw'
+import zustandWidgetsCode from './zustandDemo/ProgressWidgets.jsx?raw'
+import zustandStoreCode from './zustandDemo/store.js?raw'
+import { resetProgressStore } from './zustandDemo/store.js'
 
 const softButton = 'rounded-xl border border-[#cfdfce] bg-white px-4 py-2.5 text-sm font-medium text-[#315b46] shadow-sm transition hover:border-[#96bc9d] hover:bg-[#f5fbf2] active:scale-[.98]'
 const solidButton = 'rounded-xl bg-[#326f51] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#245a41] active:scale-[.98]'
@@ -174,7 +179,7 @@ function ModuleDemo() {
 
 export const groups = [
   { id: 'basics', title: 'React 基础', en: 'THE FOUNDATIONS', description: '从组件出发，理解界面如何由数据驱动。', topics: ['components', 'props', 'state', 'conditional', 'lists'] },
-  { id: 'advanced', title: 'React 进阶', en: 'GO A LITTLE DEEPER', description: '处理副作用、派生数据和跨层级共享。', topics: ['effect', 'memo', 'context', 'redux'] },
+  { id: 'advanced', title: 'React 进阶', en: 'GO A LITTLE DEEPER', description: '处理副作用、派生数据和跨组件状态管理。', topics: ['effect', 'memo', 'context', 'redux', 'zustand'] },
   { id: 'performance', title: '性能优化', en: 'MAKE IT FEEL FAST', description: '从渲染数量入手，让大量数据也能顺畅呈现。', topics: ['virtual-list'] },
   { id: 'vite', title: 'Vite 工程化', en: 'BUILD WITH VITE', description: '让开发与构建过程更轻快。', topics: ['env', 'modules'] },
 ]
@@ -247,8 +252,20 @@ export const topics = {
       { name: 'store.js', code: reduxStoreCode },
     ], Demo: ReduxDemo,
   },
+  zustand: {
+    group: 'advanced', number: '10', title: 'Zustand 状态管理', subtitle: '用小型 store 与 selector 共享 React 状态。', time: '6 min',
+    lead: 'Zustand 的 create 创建可在 React 组件中使用的 store Hook。业务组件把输入值传给 store 中的 action，action 用 set 更新状态；其他组件通过 selector 只订阅需要的字段。普通全局 store 不必像 Redux 那样先包 Provider。',
+    points: ['store.js 用 create 定义共享状态和 addAmount、reset 两个 action。', '组件 A 从输入框取得数字，调用 addAmount(value)；组件 B 用 selector 读取 completed 与 lastAdded。', 'set 默认浅合并顶层状态；嵌套对象更新仍要创建新对象。模块级 store 会跨组件重挂载持续存在，本示例的“重置示例”会显式调用 reset。'],
+    question: 'Zustand 的 addAmount(value) 中 value 从哪里来，为什么另一个组件能读到结果？',
+    answer: 'value 来自业务组件的输入框。组件调用 store 中的 addAmount(value)，action 用 set 根据旧状态生成新 completed；订阅 completed 的组件通过 selector 收到新值并重新渲染。这里不经过 Redux 的 dispatch/action.payload。',
+    files: [
+      { name: 'App.jsx', code: zustandAppCode },
+      { name: 'ProgressWidgets.jsx', code: zustandWidgetsCode },
+      { name: 'store.js', code: zustandStoreCode },
+    ], Demo: ZustandDemo, resetDemo: resetProgressStore,
+  },
   'virtual-list': {
-    group: 'performance', number: '10', title: 'React 虚拟列表', subtitle: '只渲染屏幕附近的内容，而非整张长列表。', time: '12 min',
+    group: 'performance', number: '11', title: 'React 虚拟列表', subtitle: '只渲染屏幕附近的内容，而非整张长列表。', time: '12 min',
     lead: '虚拟列表会根据滚动位置计算可见区间，只挂载这个区间和少量缓冲项。一个与完整列表等高的占位容器保留滚动条长度，再把可见行放到正确位置。',
     points: ['固定行高时，可用 Math.floor(scrollTop / rowHeight) 求出首个可见项。', '上下增加 overscan 缓冲项，避免快速滚动时出现短暂空白。', '数据量仍然存在内存中；虚拟化主要减少 DOM 数量和渲染开销。'],
     solutions: [
@@ -260,14 +277,14 @@ export const topics = {
     code: `import { useRef, useState } from 'react';\n\nconst items = Array.from({ length: 10000 }, (_, i) => ({\n  id: i + 1, label: '第 ' + (i + 1) + ' 条学习记录'\n}));\nconst rowHeight = 44;\nconst viewportHeight = 220;\nconst overscan = 3;\n\nexport default function VirtualList() {\n  const viewportRef = useRef(null);\n  const [scrollTop, setScrollTop] = useState(0);\n  const first = Math.floor(scrollTop / rowHeight);\n  const start = Math.max(0, first - overscan);\n  const end = Math.min(items.length, first +\n    Math.ceil(viewportHeight / rowHeight) + overscan + 1);\n  const visible = items.slice(start, end);\n\n  function jumpTo(index) {\n    const viewport = viewportRef.current;\n    viewport.scrollTop = (index - 1) * rowHeight;\n    setScrollTop(viewport.scrollTop);\n  }\n\n  return (\n    <>\n      <div ref={viewportRef}\n        onScroll={e => setScrollTop(e.currentTarget.scrollTop)}\n        style={{ height: viewportHeight, overflowY: 'auto' }}>\n        <div style={{ height: items.length * rowHeight,\n          position: 'relative' }}>\n          {visible.map(item => (\n            <div key={item.id} style={{ position: 'absolute',\n              top: (item.id - 1) * rowHeight, height: rowHeight }}>\n              {item.label}\n            </div>\n          ))}\n        </div>\n      </div>\n      <button onClick={() => jumpTo(5000)}>跳到第 5000 条</button>\n    </>\n  );\n}`, Demo: VirtualListDemo,
   },
   env: {
-    group: 'vite', number: '11', title: '环境变量与模式', subtitle: '为不同运行环境配置不同数据。', time: '4 min',
+    group: 'vite', number: '12', title: '环境变量与模式', subtitle: '为不同运行环境配置不同数据。', time: '4 min',
     lead: 'Vite 会通过 import.meta.env 暴露内建环境信息，并根据运行模式加载对应的 .env 文件。客户端自定义变量需要 VITE_ 前缀。',
     points: ['import.meta.env.MODE 可读取当前模式。', 'import.meta.env.DEV 与 PROD 用于区分开发与生产。', 'VITE_ 变量会进入客户端构建产物，不能存放密钥。'],
     question: '为什么不能把 API 私钥写在 VITE_ 变量中？', answer: 'VITE_ 变量会被打包进客户端代码，任何访问页面的人都有机会读取。',
     code: `function EnvironmentInfo() {\n  return (\n    <dl>\n      <dt>MODE</dt>\n      <dd>{import.meta.env.MODE}</dd>\n      <dt>DEV</dt>\n      <dd>{String(import.meta.env.DEV)}</dd>\n      <dt>BASE_URL</dt>\n      <dd>{import.meta.env.BASE_URL}</dd>\n    </dl>\n  );\n}\n\n// 自定义客户端变量须以 VITE_ 开头。`, Demo: EnvDemo,
   },
   modules: {
-    group: 'vite', number: '12', title: '动态导入与拆包', subtitle: '需要时再加载，让入口更轻。', time: '4 min',
+    group: 'vite', number: '13', title: '动态导入与拆包', subtitle: '需要时再加载，让入口更轻。', time: '4 min',
     lead: 'import() 可以异步加载模块。Vite 在构建时会为动态导入创建独立代码块，浏览器在真正需要时再请求。',
     points: ['动态导入返回 Promise，可用 await 读取模块导出。', '适合低频功能、较大的工具模块或路由级拆包。', '加载中与失败状态也应该有清晰反馈。'],
     question: '静态 import 与动态 import() 有什么区别？', answer: '静态 import 在模块加载时就解析；动态 import() 在执行到该语句时才请求，并返回 Promise。',

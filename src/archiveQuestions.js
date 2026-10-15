@@ -1,5 +1,6 @@
 import { extraCategories, extraReferences, extraQuestions } from './archiveQuestionsExpansion.js'
 import { latestReferences, latestQuestions } from './archiveQuestions2026.js'
+import { browserReferences, browserQuestions } from './archiveQuestionsBrowser.js'
 
 // 按 2024–2026 面试准备中的常见考查方向整理；不代表特定企业原题或频率统计。
 export const archiveCategories = [
@@ -58,6 +59,7 @@ export const archiveReferences = {
   vitePlugins: { label: 'Vite 6 · 插件 API', url: 'https://v6.vite.dev/guide/api-plugin' },
   ...extraReferences,
   ...latestReferences,
+  ...browserReferences,
 }
 
 const baseArchiveQuestions = [
@@ -509,7 +511,7 @@ const baseArchiveQuestions = [
   },
 ]
 
-const allArchiveQuestions = [...baseArchiveQuestions, ...extraQuestions, ...latestQuestions]
+const allArchiveQuestions = [...baseArchiveQuestions, ...extraQuestions, ...latestQuestions, ...browserQuestions]
 export const archiveQuestions = archiveCategories.flatMap(category =>
   allArchiveQuestions.filter(question => question.category === category.id),
 )

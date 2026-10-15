@@ -31,29 +31,31 @@
 
 | 模块 | 作用 | 主要文件 |
 | --- | --- | --- |
-| 面试题归档 | 11 个方向的独立题库、搜索、分类、详细答案与 2026 备考方向 | `src/archiveQuestions.js`、`src/archiveQuestionsExpansion.js`、`src/archiveQuestions2026.js`、`src/ArchivePage.jsx`、`src/archive.css` |
+| 面试题归档 | 11 个方向的独立题库、搜索、分类、详细答案与 2026 备考方向 | `src/archiveQuestions.js`、`src/archiveQuestionsExpansion.js`、`src/archiveQuestions2026.js`、`src/archiveQuestionsBrowser.js`、`src/ArchivePage.jsx`、`src/archive.css` |
 | 应用入口与页面 | 挂载 React、导航、Hash 路由、详情页和代码预览 | `src/main.jsx`、`src/App.jsx` |
-| 知识点内容 | 分组、关键说明、示例代码和交互组件 | `src/topics.jsx`、`src/reduxDemo/` |
+| 知识点内容 | 分组、关键说明、示例代码和交互组件 | `src/topics.jsx`、`src/reduxDemo/`、`src/zustandDemo/` |
 | 面试追问 | 按知识点维护可展开的问题与参考思路 | `src/interviewQuestions.js` |
 | 虚拟列表专题 | 三种库的真实 Demo、源码片段及渲染性能图 | `src/VirtualLibraryDemos.jsx`、`src/PerformanceChart.jsx` |
 | 样式 | 页面视觉、响应式布局与 Tailwind 工具类 | `src/styles.css`、`tailwind.config.js` |
 
-路由使用 URL Hash，例如 `#/topic/state`、`#/topic/virtual-list` 和 `#/about`。代码预览区支持复制示例代码；「重置示例」会重新挂载当前 Demo，便于从初始状态再演示一次。
+路由使用 URL Hash，例如 `#/topic/state`、`#/topic/zustand` 和 `#/about`。代码预览区支持复制示例代码；「重置示例」会重新挂载当前 Demo，Zustand 这类模块级 store 还会显式调用 reset。
 
 ### 当前内容
 
 - **React 基础**：组件与 JSX、Props、State、条件渲染、列表与 Key。
-- **React 进阶**：Effect、useMemo、Context、Redux 状态管理。
+- **React 进阶**：Effect、useMemo、Context、Redux 与 Zustand 状态管理。
 - **性能优化**：React 虚拟列表。
 - **Vite 工程化**：环境变量、动态导入。
 
 Redux 专题的示例按 `src/reduxDemo/App.jsx`、`ProgressWidgets.jsx` 和 `store.js` 拆分。页面可切换查看三个真实文件：业务组件从输入框得到数字，用 `dispatch(addAmount(value))` 派发；reducer 从 `action.payload` 读取该数字，另一个组件从 store 读取更新结果。
 
+Zustand 专题沿用相同的跨组件进度场景，按 `src/zustandDemo/` 中的三个文件拆分：业务组件调用 store action，展示组件用 selector 订阅字段，无需 Redux 的 Provider 和 dispatch。Pinia 属于 Vue 生态，本轮暂不加入 React 项目。
+
 虚拟列表专题先用手写 Demo 解释可见区间、占位高度和 overscan，再分别用 `react-window`、`@tanstack/react-virtual`、`react-virtuoso` 展示固定行高、动态测量和自动处理行高的写法。每种库都可切换查看核心代码，并在 10,000 条数据中滚动或跳转。页面中的性能图比较 **一次挂载 10,000 行** 与 **只挂载首屏行** 的 React 挂载耗时和 DOM 行数；它是当前浏览器中的教学测量，不代表三个库之间的性能排名。
 
 ### 2024—2026 面试题归档
 
-顶部「面试题归档」菜单进入独立题库。当前收录 **163 道、11 个方向**：JavaScript、CSS、React、系统与性能优化、Webpack、Vite、浏览器与网络、TypeScript、AI 应用、场景题与线上排障、Vue 3。支持按分类浏览和关键词搜索。每道题包含回答思路、延伸追问及核对资料，部分题目附示例代码。2026 扩展题包含 JS 事件循环/防抖/节流/深拷贝手写、React 18/19 Hooks，以及 AI 应用岗位中的流式交互、RAG、Agent 与可观测性；React 19 题目为面试知识，当前项目仍使用 React 18，示例不应直接复制到运行页面。
+顶部「面试题归档」菜单进入独立题库。当前收录 **175 道、11 个方向**：JavaScript、CSS、React、系统与性能优化、Webpack、Vite、浏览器与网络、TypeScript、AI 应用、场景题与线上排障、Vue 3。支持按分类浏览和关键词搜索。每道题包含回答思路、延伸追问及核对资料，部分题目附示例代码。扩展题包含 JS 事件循环/防抖/节流/深拷贝手写、React 18/19 Hooks 与 Zustand、AI 流式交互/RAG/Agent，以及跨浏览器兼容、跨设备适配和跨域通信；React 19 题目为面试知识，当前项目仍使用 React 18，示例不应直接复制到运行页面。
 
 题目参考用户提供的《2024前端面试八股文》和《2025年前端最新场景题面试攻略》，按概念和实际场景合并重复主题，并用当前官方文档核对关键技术说法。2024 资料侧重传统知识模块；2025 资料包含白屏排障、埋点、跨标签页通信、图片加载、工程方案等场景。页面的「2026 备考方向」由这两份资料的主题和当前 AI 应用工程实践推断，**不是**企业原题清单、频率统计或录用预测。旧资料中涉及 Vue 2、过时构建插件或浏览器兼容性的描述，不直接当作现行技术结论。
 
@@ -67,6 +69,7 @@ Vue 3 专题新增条件渲染与状态保留、列表渲染、组件 v-model、
 
 - **React 18 + Vite 6**：组件、交互状态与本地开发构建。
 - **Redux Toolkit + React Redux**：Redux 章节中的共享状态示例。
+- **Zustand**：React 进阶章节中的轻量共享状态示例。
 - **Tailwind CSS 3 + 自定义 CSS**：工具类与页面布局、配色、响应式样式。
 - **lucide-react**：界面图标。
 - **react-window、@tanstack/react-virtual、react-virtuoso**：虚拟列表专题中的实际运行示例。

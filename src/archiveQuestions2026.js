@@ -20,6 +20,8 @@ export const latestReferences = {
   reactUse: { label: 'React · use API', url: 'https://react.dev/reference/react/use' },
   reactHooksRules: { label: 'React · Hooks 规则', url: 'https://react.dev/reference/rules/rules-of-hooks' },
   reactImperative: { label: 'React · useImperativeHandle', url: 'https://react.dev/reference/react/useImperativeHandle' },
+  zustandIntro: { label: 'Zustand · 入门', url: 'https://zustand.docs.pmnd.rs/learn/getting-started/introduction' },
+  zustandCreate: { label: 'Zustand · create API', url: 'https://zustand.docs.pmnd.rs/reference/apis/create' },
   aiSse: { label: 'MDN · Server-sent events', url: 'https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events' },
   aiWebSocket: { label: 'MDN · WebSocket API', url: 'https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API' },
   aiStreams: { label: 'MDN · Streams API', url: 'https://developer.mozilla.org/en-US/docs/Web/API/Streams_API/Using_readable_streams' },
@@ -162,4 +164,17 @@ export const latestQuestions = [
       '前端需限制类型/大小、展示预览与上传/解析进度，处理取消和重试，并明确“上传完成”与“可被模型检索或理解”是两个不同状态。大文件可分片或直传，但需处理过期凭证与重复提交。',
       '服务端还要验证 MIME 与实际内容、扫描风险文件、隔离租户、控制访问权限和存储生命周期。解析出的文档文字属于不可信外部内容，不能当系统指令使用；预览和渲染也要考虑 XSS。',
     ], 'PDF 已上传成功但解析失败，界面该显示什么，重试从哪一步开始？', ['aiSafety', 'aiOwasp', 'browserCsp']),
+
+  q('react', 'react-zustand-flow-2026', '实战', 'Zustand 中 create、set、selector 怎样完成跨组件状态更新？',
+    '一个组件调用 action，set 更新共享 store；另一个组件按 selector 订阅所需字段。', [
+      'create 返回带 store 能力的 React Hook。将状态与更新方法定义在 store 内，业务组件从输入框取得值后调用 action，action 使用 set 更新状态；展示组件用 useStore(state => state.completed) 订阅目标字段。通常不需要为模块级 store 包 Provider。',
+      'set 默认浅合并顶层状态，不会深合并嵌套对象。尽量让 selector 返回稳定的单个值；若每次都构造新对象，需考虑浅比较等方法，避免无谓重渲染。模块级 store 不会随组件卸载自动销毁。',
+    ], '只重新挂载组件而不调用 reset，模块级 store 的值会怎样？', ['zustandIntro', 'zustandCreate'],
+    'import { create } from "zustand";\nconst useProgress = create((set) => ({\n  completed: 0,\n  add: (n) => set((s) => ({ completed: s.completed + n })),\n}));\n// 组件 A：const add = useProgress((s) => s.add); add(2);\n// 组件 B：const completed = useProgress((s) => s.completed);'),
+
+  q('react', 'react-zustand-redux-2026', '进阶', 'Zustand、Redux Toolkit、Context、useState 该怎么选？',
+    '先看状态拥有者与复杂度，再看团队对约束、调试和持久化的要求。', [
+      '组件局部状态优先 useState；跨层传值且更新不复杂时可考虑 Context。Zustand 用轻量 store 和 selector 共享状态，适合希望减少样板代码的场景；Redux Toolkit 用 action/reducer 约定组织更复杂的更新流程，便于统一追踪。',
+      '选型不只看代码行数：还要考虑测试、服务端渲染时的请求隔离、异步数据缓存、团队习惯和调试工具。普通服务器数据获取也不应无条件塞进全局客户端 store。',
+    ], '为什么仅为了一个输入框的值引入全局 store 往往得不偿失？', ['zustandIntro', 'reactState', 'reactContext']),
 ]

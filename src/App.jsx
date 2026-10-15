@@ -124,7 +124,7 @@ function Workspace({ topic }) {
         <div className="code-scroll" key={selectedFile.name}><pre aria-label={`${selectedFile.name} 示例代码`}><code>{selectedFile.code.split('\n').map((line, index) => <CodeLine key={index} line={line} number={index + 1} />)}</code></pre></div>
         <div className="code-bottom"><span><span className="code-status-dot" /> {selectedFile.name.endsWith('.jsx') ? 'JSX' : 'JS'}</span><span>UTF-8 <i /> React</span></div>
       </div>
-      <div className="preview-pane"><div className="pane-toolbar preview-toolbar"><div className="preview-title"><Play size={14} fill="currentColor" /><span>实时效果</span><span className="live-pill"><span /> LIVE</span></div><button className="toolbar-button preview-reset" onClick={() => setPreviewKey(value => value + 1)}><RotateCcw size={15} /> 重置示例</button></div><div className="preview-surface" key={previewKey}><Demo /></div><div className="preview-bottom"><span>试着点击、输入或切换，观察界面变化</span><Sparkles size={15} /></div></div>
+      <div className="preview-pane"><div className="pane-toolbar preview-toolbar"><div className="preview-title"><Play size={14} fill="currentColor" /><span>实时效果</span><span className="live-pill"><span /> LIVE</span></div><button className="toolbar-button preview-reset" onClick={() => { topic.resetDemo?.(); setPreviewKey(value => value + 1) }}><RotateCcw size={15} /> 重置示例</button></div><div className="preview-surface" key={previewKey}><Demo /></div><div className="preview-bottom"><span>试着点击、输入或切换，观察界面变化</span><Sparkles size={15} /></div></div>
     </div>
   </section>
 }

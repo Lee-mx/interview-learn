@@ -1,6 +1,6 @@
 // 扩展题库：每题保留回答路径、面试追问与可核对的官方资料。
 export const extraCategories = [
-  { id: 'browser', name: '浏览器与网络', short: '浏览器/网络', en: 'BROWSER & NETWORK', description: '把页面加载、缓存、通信和安全边界串成完整链路。' },
+  { id: 'browser', name: '浏览器与网络', short: '浏览器/网络', en: 'BROWSER & NETWORK', description: '从跨浏览器、跨设备适配到跨域与安全边界，串起真实页面问题。' },
   { id: 'typescript', name: 'TypeScript 与工程实践', short: 'TypeScript', en: 'TYPES & TOOLING', description: '从类型收窄到大型项目组织，回答类型设计的取舍。' },
   { id: 'ai', name: 'AI 应用与求职实践', short: 'AI 应用', en: 'AI IN PRACTICE', description: '围绕 AI 功能开发、可靠性、安全与求职项目展开。' },
   { id: 'scenario', name: '场景题与线上排障', short: '场景题', en: 'DEBUG & DESIGN', description: '从真实症状出发，讲清楚定位路径、方案与验收。' },

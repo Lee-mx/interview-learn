@@ -90,6 +90,24 @@ export const interviewQuestions = {
       answer: '组件自己的临时状态优先用 useState。Context 适合向后代传递主题、语言等值；当共享状态有较复杂的更新规则、涉及多个页面或需要集中追踪 action 时，Redux 更有价值。Context 本身不提供 Redux 的 reducer、开发工具和更新约定。',
     },
   ],
+  zustand: [
+    {
+      question: '给一个新项目做状态管理选型：什么时候用 Zustand，什么时候用 Redux Toolkit？',
+      answer: '先判断是否真的需要全局客户端状态：只在单个组件使用的输入值优先 useState；远端数据的缓存与失效应单独考虑。若多个组件共享购物车、筛选条件或编辑草稿，更新规则较直接，希望少量代码快速组织 store 和 selector，可选 Zustand。若状态领域多、更新链路复杂、多人协作，需要统一的 action/reducer 约定、可追踪的状态变化和成熟的调试/异步数据工具，可选 Redux Toolkit。已有项目也要考虑团队熟悉度和迁移成本，不因“代码更少”就强行改库。',
+    },
+    {
+      question: 'Zustand 与 Redux Toolkit 在更新流程上有什么不同？',
+      answer: 'Zustand 常把状态和 action 放在 create 的 store 中，由 action 调用 set；Redux Toolkit 用 slice 定义 reducer 与 action creator，组件 dispatch(action) 后由 reducer 处理。两者都能共享状态，选型要看团队约定、状态复杂度和调试需求。',
+    },
+    {
+      question: '为什么 Zustand 中的 set({ profile: { name } }) 可能丢失 profile 的其他字段？',
+      answer: 'set 默认只浅合并顶层对象，不会深合并 profile。更新嵌套字段时要从旧状态展开该层，例如 set(state => ({ profile: { ...state.profile, name } }))。',
+    },
+    {
+      question: '页面“重置示例”只重挂载 React 组件，模块级 Zustand store 为什么没有自动归零？',
+      answer: 'store 创建在模块作用域，不属于该组件实例。组件卸载/重挂载不会销毁它；应显式调用 reset action，或在需要隔离实例时创建按 Provider 作用域管理的 store。',
+    },
+  ],
   'virtual-list': [
     {
       question: 'overscan 缓冲项越多越好吗？',
