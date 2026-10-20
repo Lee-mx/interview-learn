@@ -43,8 +43,8 @@
 ### 当前内容
 
 - **React 基础**：组件与 JSX、Props、State、条件渲染、列表与 Key。
-- **React 进阶**：Effect、useMemo、Context、Redux 与 Zustand 状态管理。
-- **性能优化**：React 虚拟列表。
+- **React 进阶**：Effect、Context、Redux 与 Zustand 状态管理。
+- **性能优化**：useMemo 派生数据、useCallback 稳定回调、useTransition 非紧急更新、React 虚拟列表。
 - **Vite 工程化**：环境变量、动态导入。
 
 Redux 专题的示例按 `src/reduxDemo/App.jsx`、`ProgressWidgets.jsx` 和 `store.js` 拆分。页面可切换查看三个真实文件：业务组件从输入框得到数字，用 `dispatch(addAmount(value))` 派发；reducer 从 `action.payload` 读取该数字，另一个组件从 store 读取更新结果。

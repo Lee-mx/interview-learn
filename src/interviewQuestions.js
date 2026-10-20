@@ -70,6 +70,34 @@ export const interviewQuestions = {
       answer: '不需要。缓存本身也有成本。先保持代码清晰，只有计算昂贵或稳定引用确实有帮助时，再通过测量决定是否使用。',
     },
   ],
+  callback: [
+    {
+      question: 'useCallback 和 useMemo 分别缓存什么？',
+      answer: 'useCallback(fn, deps) 缓存函数引用，useMemo(() => compute(), deps) 缓存计算结果。两者都依赖正确的依赖数组，也都应服务于具体的性能问题，而非无条件使用。',
+    },
+    {
+      question: '为什么把依赖数组写成 [] 可能让回调读到旧 state？',
+      answer: '回调会保留创建时闭包中的值。若内部直接读取 count，却把依赖写成 []，后续 count 更新后仍可能读取旧值；应把 count 加入依赖，或在只需基于旧值更新时使用 setCount(current => current + 1)。',
+    },
+    {
+      question: '怎么判断 useCallback 值不值得加？',
+      answer: '先用 Profiler 或实际交互定位昂贵的重复渲染，再确认函数引用变化确实让 memo 子组件或依赖该函数的逻辑重复工作。若子组件很轻、没有 memo，或其他 props 每次都变，缓存回调可能没有收益，反而增加理解成本。',
+    },
+  ],
+  transition: [
+    {
+      question: 'startTransition(() => setQuery(value)) 会延迟执行回调吗？',
+      answer: '不会。回调会立即执行，React 把其中同步安排的状态更新标记为非紧急，让渲染可以被输入等紧急更新打断。它不是 setTimeout，也不负责防抖。',
+    },
+    {
+      question: 'useTransition 和 useDeferredValue 该怎么选？',
+      answer: '能控制某次状态更新的 setter 时，可用 startTransition 标记它；如果只拿到变化的 prop 或 Hook 返回值，无法控制更新来源，可以用 useDeferredValue 让消费这个值的部分稍后渲染。两者都不负责减少请求次数。',
+    },
+    {
+      question: '异步请求完成后的 setState 会自动属于之前的 Transition 吗？',
+      answer: '不会自动属于。在 React 18 中，await 之后的更新需要再用 startTransition 包一层；请求竞态、取消和错误处理也仍需另外设计。',
+    },
+  ],
   context: [
     {
       question: 'Provider 的 value 改变后，哪些组件会更新？',
