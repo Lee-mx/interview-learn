@@ -6,11 +6,17 @@ import { interviewQuestions } from './interviewQuestions.js'
 import { virtualLibraryDemos } from './VirtualLibraryDemos.jsx'
 import { archiveCategories } from './archiveQuestions.js'
 import ArchivePage from './ArchivePage.jsx'
+import MockInterviewPage from './MockInterviewPage.jsx'
 
 function routeFromHash() {
   const value = window.location.hash.replace(/^#\/?/, '')
   if (value === 'about') return 'about'
+  if (value === 'interview') return 'interview'
   if (value === 'archive') return 'archive'
+  if (value === 'archive/byte-coding') {
+    window.history.replaceState(null, '', '#/archive/interview-real')
+    return 'archive/interview-real'
+  }
   const archiveMatch = value.match(/^archive\/([^/]+)$/)
   if (archiveMatch && archiveCategories.some(category => category.id === archiveMatch[1])) return value
   const match = value.match(/^topic\/(.+)$/)
@@ -49,6 +55,7 @@ function Header({ current, onNavigate }) {
             <div className="dropdown-topics"><button role="menuitem" onClick={() => select('archive')}>全部题目 <ArrowUpRight size={14} /></button>{archiveCategories.map(category => <button role="menuitem" key={category.id} onClick={() => select('archive/' + category.id)}>{category.short}<ArrowUpRight size={14} /></button>)}</div>
           </div>
         </div>
+        <button className={`about-nav ${current === 'interview' ? 'is-current' : ''}`} onClick={() => select('interview')}>模拟面试</button>
         <button className={`about-nav ${current === 'about' ? 'is-current' : ''}`} onClick={() => select('about')}>关于</button>
       </nav>
       <div className="header-right"><span className="header-note"><span className="online-dot" /> 一起保持好奇</span><button className="header-start" onClick={() => select('components')}>开始探索 <ArrowUpRight size={15} /></button></div>
@@ -103,6 +110,7 @@ function Workspace({ topic }) {
   const [copied, setCopied] = useState(false)
   const [activeFile, setActiveFile] = useState(0)
   const Demo = topic.Demo
+  const conceptPreview = topic.previewMode === 'concept'
   const files = topic.files || [{ name: 'App.jsx', code: topic.code }]
   const selectedFile = files[activeFile] || files[0]
   useEffect(() => { setPreviewKey(0); setCopied(false); setActiveFile(0) }, [topic])
@@ -111,7 +119,7 @@ function Workspace({ topic }) {
     catch { setCopied(false) }
   }
   return <section className="workspace" aria-label="代码与效果展示">
-    <div className="workspace-header"><div><span className="workspace-activity"><span /> INTERACTIVE PLAYGROUND</span><strong>看代码，也看它如何发生。</strong></div><div className="workspace-header-right"><span>React + Vite</span><Code2 size={18} /></div></div>
+    <div className="workspace-header"><div><span className="workspace-activity"><span /> {conceptPreview ? 'VERSIONED CODE EXAMPLES' : 'INTERACTIVE PLAYGROUND'}</span><strong>{conceptPreview ? '读源码，辨使用场景。' : '看代码，也看它如何发生。'}</strong></div><div className="workspace-header-right"><span>{conceptPreview ? 'React 19 代码 · React 18 页面' : 'React + Vite'}</span><Code2 size={18} /></div></div>
     <div className="workspace-grid">
       <div className="code-pane">
         <div className="pane-toolbar">
@@ -124,7 +132,7 @@ function Workspace({ topic }) {
         <div className="code-scroll" key={selectedFile.name}><pre aria-label={`${selectedFile.name} 示例代码`}><code>{selectedFile.code.split('\n').map((line, index) => <CodeLine key={index} line={line} number={index + 1} />)}</code></pre></div>
         <div className="code-bottom"><span><span className="code-status-dot" /> {selectedFile.name.endsWith('.jsx') ? 'JSX' : 'JS'}</span><span>UTF-8 <i /> React</span></div>
       </div>
-      <div className="preview-pane"><div className="pane-toolbar preview-toolbar"><div className="preview-title"><Play size={14} fill="currentColor" /><span>实时效果</span><span className="live-pill"><span /> LIVE</span></div><button className="toolbar-button preview-reset" onClick={() => { topic.resetDemo?.(); setPreviewKey(value => value + 1) }}><RotateCcw size={15} /> 重置示例</button></div><div className="preview-surface" key={previewKey}><Demo /></div><div className="preview-bottom"><span>试着点击、输入或切换，观察界面变化</span><Sparkles size={15} /></div></div>
+      <div className="preview-pane"><div className="pane-toolbar preview-toolbar"><div className="preview-title"><Play size={14} fill="currentColor" /><span>{conceptPreview ? '概念导览' : '实时效果'}</span>{!conceptPreview && <span className="live-pill"><span /> LIVE</span>}</div><button className="toolbar-button preview-reset" onClick={() => { topic.resetDemo?.(); setPreviewKey(value => value + 1) }}><RotateCcw size={15} /> 重置示例</button></div><div className="preview-surface" key={previewKey}><Demo /></div><div className="preview-bottom"><span>{conceptPreview ? '场景示意：当前页面不会运行 React 19 Hook' : '试着点击、输入或切换，观察界面变化'}</span><Sparkles size={15} /></div></div>
     </div>
   </section>
 }
@@ -216,18 +224,19 @@ export default function App() {
       else window.location.hash = hash
       return
     }
-    const hash = id === 'about' ? '#/about' : `#/topic/${id}`
+    const hash = id === 'about' || id === 'interview' ? `#/${id}` : `#/topic/${id}`
     if (window.location.hash === hash) setCurrent(id)
     else window.location.hash = hash
     document.getElementById('learning-area')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
   const isArchive = current === 'archive' || current.startsWith('archive/')
+  const isInterview = current === 'interview'
   return <div className="app-shell">
     <Header current={current} onNavigate={navigate} />
     <main>
-      {!isArchive && <Hero current={current} onNavigate={navigate} />}
-      <div className={'content-shell' + (isArchive ? ' archive-shell' : '')} id="learning-area">
-        {isArchive ? <ArchivePage categoryId={current.split('/')[1] || null} onSelectCategory={category => navigate(category ? 'archive/' + category : 'archive')} /> : <><Sidebar current={current} onNavigate={navigate} />{current === 'about' ? <AboutPage /> : <TopicPage id={current} onNavigate={navigate} />}</>}
+      {!isArchive && !isInterview && <Hero current={current} onNavigate={navigate} />}
+      <div className={'content-shell' + (isArchive || isInterview ? ' archive-shell' : '')} id="learning-area">
+        {isArchive ? <ArchivePage categoryId={current.split('/')[1] || null} onSelectCategory={category => navigate(category ? 'archive/' + category : 'archive')} /> : isInterview ? <MockInterviewPage /> : <><Sidebar current={current} onNavigate={navigate} />{current === 'about' ? <AboutPage /> : <TopicPage id={current} onNavigate={navigate} />}</>}
       </div>
     </main>
     <Footer />

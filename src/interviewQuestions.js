@@ -136,6 +136,28 @@ export const interviewQuestions = {
       answer: 'store 创建在模块作用域，不属于该组件实例。组件卸载/重挂载不会销毁它；应显式调用 reset action，或在需要隔离实例时创建按 Provider 作用域管理的 store。',
     },
   ],
+  'react19-hooks': [
+    {
+      question: 'useActionState 的 Action 为什么先接收 previousState，再接收 formData？',
+      answer: 'useActionState 会把上一次 Action 的返回值作为第一个参数传给下一次调用，便于根据前一状态计算结果。作为 form action 使用时，表单的 FormData 是第二个参数；普通的 form action 才直接以 FormData 为第一个参数。',
+    },
+    {
+      question: 'useFormStatus 为什么要在 form 的子组件中调用？',
+      answer: '它读取的是最近父级 form 的提交上下文。调用它的组件如果自己返回 form，并不处在该 form 的后代位置；把提交按钮抽成 form 内部子组件，才能取得对应表单的 pending 等信息。',
+    },
+    {
+      question: 'useOptimistic 显示的点赞已算保存成功了吗？失败时怎么办？',
+      answer: '没有。乐观状态只让界面先响应，持久化仍要等待 Action。成功后用真实结果更新基础状态；失败时让临时乐观值回退，并给用户错误反馈。还要考虑重复提交和响应乱序。',
+    },
+    {
+      question: 'useEffectEvent 是 React 19.0 就有的吗？能代替所有 Effect 依赖吗？',
+      answer: '它在 React 19.2 加入，不属于 19.0 新 Hook。它只适用于从 Effect 触发、但需要读取最新值且不应因此重新同步的事件逻辑；不能用来隐藏本应使 Effect 重跑的依赖。',
+    },
+    {
+      question: 'useTransition 是 React 19 新 Hook 吗？',
+      answer: '不是，它在 React 18 已存在。React 19 增强了 Transition 对异步 Action 的支持；讨论版本新能力时要区分“旧 Hook 能力增强”和“新增 Hook”。',
+    },
+  ],
   'virtual-list': [
     {
       question: 'overscan 缓冲项越多越好吗？',

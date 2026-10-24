@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { ArrowRight, ArrowUpRight, BookOpen, ChevronDown, Search, Sparkles } from 'lucide-react'
 import { archiveCategories, archiveQuestions, archiveReferences } from './archiveQuestions.js'
+import ByteSocialDemo from './ByteSocialDemos.jsx'
 import './archive.css'
 
 const questionNumber = new Map(archiveQuestions.map((question, index) => [question.id, String(index + 1).padStart(2, '0')]))
@@ -41,14 +42,14 @@ export default function ArchivePage({ categoryId, onSelectCategory }) {
     <div className="archive-breadcrumb"><span>春日代码簿</span><ArrowRight size={13} /><strong>面试题归档</strong>{activeCategory && <><ArrowRight size={13} /><span>{activeCategory.name}</span></>}</div>
     <div className="archive-hero">
       <div className="archive-hero-copy">
-        <span className="section-kicker"><span /> INTERVIEW QUESTION ARCHIVE · 2024—2026</span>
+        <span className="section-kicker"><span /> INTERVIEW QUESTION ARCHIVE · STUDY NOTES</span>
         <h2>把常见追问，<br /><em>答得更有条理。</em></h2>
         <p>面向大厂及中大型团队前端面试准备：从基础机制、框架原理到工程与性能，每道题都整理回答路径、可讨论的边界和延伸追问。</p>
-        <div className="archive-hero-stats"><span><strong>{archiveQuestions.length}</strong> 道问题</span><i /><span><strong>{archiveCategories.length}</strong> 个方向</span><i /><span><strong>24—26</strong> 年度整理</span></div>
+        <div className="archive-hero-stats"><span><strong>{archiveQuestions.length}</strong> 道问题</span><i /><span><strong>{archiveCategories.length}</strong> 个方向</span><i /><span><strong>持续</strong> 整理更新</span></div>
       </div>
       <div className="archive-hero-art" aria-hidden="true"><span>Q.</span><div><b>01</b><b>02</b><b>03</b></div><small>KEEP ASKING WHY ↗</small></div>
     </div>
-    <p className="archive-note"><Sparkles size={15} /> 这是按 2024—2026 年面试准备中常见的考查方向整理的题库，不标注未经核实的企业原题或出现频率。技术答案附官方文档，工程细节请结合实际版本回答。</p>
+    <p className="archive-note"><Sparkles size={15} /> 常规题按备考方向整理，不代表企业原题或出现频率。「面试真题」同时包含用户提供的实际面试题和根据公开面经考点改编的练习；并非官方题库，具体出处与技术资料可在各题下方核对。</p>
 
     {!activeCategory && <section className="archive-focus" aria-label="2026 年备考方向预测">
       <div className="archive-focus-heading"><div><span className="section-kicker"><span /> 2026 PREP FORECAST</span><h3>2026 年，可以优先准备这些方向。</h3></div><p>依据提供的《2024前端面试八股文》与《2025年前端最新场景题面试攻略》梳理：前者覆盖基础知识体系，后者包含大量实际场景与工程问题。以下是备考推断，不是企业提问频率统计。</p></div>
@@ -72,8 +73,10 @@ export default function ArchivePage({ categoryId, onSelectCategory }) {
             <ChevronDown className="archive-question-chevron" size={18} />
           </button>
           {expanded && <div className="archive-question-body" id={'archive-answer-' + question.id}>
+            {question.origin && <p className="archive-origin">题目出处 · {question.origin}</p>}
             <div className="archive-answer-main"><span className="archive-answer-label">回答思路</span>{question.answer.map((paragraph, index) => <div className="archive-answer-step" key={paragraph}><span>{String(index + 1).padStart(2, '0')}</span><p>{paragraph}</p></div>)}</div>
-            {question.example && <div className="archive-example"><div><BookOpen size={15} /> 一个小例子</div><pre><code>{question.example}</code></pre></div>}
+            {question.example && <div className="archive-example"><div><BookOpen size={15} /> {question.demoId ? '参考实现 · 与下方 Demo 同源' : '一个小例子'}</div><pre><code>{question.example}</code></pre></div>}
+            {question.demoId && <ByteSocialDemo id={question.demoId} />}
             <div className="archive-followup"><span>延伸追问</span><p>{question.followUp}</p></div>
             <div className="archive-sources"><span>核对资料</span>{question.refs.map(id => <a href={archiveReferences[id].url} target="_blank" rel="noopener noreferrer" key={id}>{archiveReferences[id].label}<ArrowUpRight size={13} /></a>)}</div>
           </div>}

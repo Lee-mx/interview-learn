@@ -1,8 +1,9 @@
 import { extraCategories, extraReferences, extraQuestions } from './archiveQuestionsExpansion.js'
 import { latestReferences, latestQuestions } from './archiveQuestions2026.js'
 import { browserReferences, browserQuestions } from './archiveQuestionsBrowser.js'
+import { socialReferences, socialQuestions } from './archiveQuestionsSocial.js'
 
-// 按 2024–2026 面试准备中的常见考查方向整理；不代表特定企业原题或频率统计。
+// 常规题按备考方向整理；真题专题标明实际题目与改编练习的来源，不代表企业官方题库或频率统计。
 export const archiveCategories = [
   { id: 'javascript', name: 'JavaScript 基础', short: 'JavaScript', en: 'LANGUAGE & RUNTIME', description: '从执行机制到异步与对象模型，把“为什么”讲清楚。' },
   { id: 'css', name: 'CSS 与布局', short: 'CSS', en: 'LAYOUT & STYLING', description: '层叠、布局和响应式，是界面问题的常见起点。' },
@@ -11,6 +12,7 @@ export const archiveCategories = [
   { id: 'webpack', name: 'Webpack 工程化', short: 'Webpack', en: 'BUNDLE & BUILD', description: '理解模块图、构建扩展点和产物优化。' },
   { id: 'vite', name: 'Vite 工程化', short: 'Vite', en: 'DEV & PRODUCTION', description: '结合本项目的 Vite 6，区分开发体验与生产构建。' },
   ...extraCategories,
+  { id: 'interview-real', name: '面试真题', short: '面试真题', en: 'REAL INTERVIEW QUESTIONS', description: '收录用户提供的实际面试题，也有依据公开面经考点改编的练习；每题标明来源并配可运行 Demo。' },
 ]
 
 export const archiveReferences = {
@@ -60,6 +62,7 @@ export const archiveReferences = {
   ...extraReferences,
   ...latestReferences,
   ...browserReferences,
+  ...socialReferences,
 }
 
 const baseArchiveQuestions = [
@@ -511,7 +514,7 @@ const baseArchiveQuestions = [
   },
 ]
 
-const allArchiveQuestions = [...baseArchiveQuestions, ...extraQuestions, ...latestQuestions, ...browserQuestions]
+const allArchiveQuestions = [...baseArchiveQuestions, ...extraQuestions, ...latestQuestions, ...browserQuestions, ...socialQuestions]
 export const archiveQuestions = archiveCategories.flatMap(category =>
   allArchiveQuestions.filter(question => question.category === category.id),
 )

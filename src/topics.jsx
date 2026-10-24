@@ -13,6 +13,8 @@ import zustandAppCode from './zustandDemo/App.jsx?raw'
 import zustandWidgetsCode from './zustandDemo/ProgressWidgets.jsx?raw'
 import zustandStoreCode from './zustandDemo/store.js?raw'
 import { resetProgressStore } from './zustandDemo/store.js'
+import React19GuideDemo from './React19GuideDemo.jsx'
+import { react19Files } from './react19Examples.js'
 
 const softButton = 'rounded-xl border border-[#cfdfce] bg-white px-4 py-2.5 text-sm font-medium text-[#315b46] shadow-sm transition hover:border-[#96bc9d] hover:bg-[#f5fbf2] active:scale-[.98]'
 const solidButton = 'rounded-xl bg-[#326f51] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#245a41] active:scale-[.98]'
@@ -183,7 +185,7 @@ function ModuleDemo() {
 
 export const groups = [
   { id: 'basics', title: 'React 基础', en: 'THE FOUNDATIONS', description: '从组件出发，理解界面如何由数据驱动。', topics: ['components', 'props', 'state', 'conditional', 'lists'] },
-  { id: 'advanced', title: 'React 进阶', en: 'GO A LITTLE DEEPER', description: '处理副作用、跨层传值和跨组件状态管理。', topics: ['effect', 'context', 'redux', 'zustand'] },
+  { id: 'advanced', title: 'React 进阶', en: 'GO A LITTLE DEEPER', description: '处理副作用、跨层传值、状态管理与 React 19 新能力。', topics: ['effect', 'context', 'redux', 'zustand', 'react19-hooks'] },
   { id: 'performance', title: '性能优化', en: 'MAKE IT FEEL FAST', description: '用缓存、非紧急更新与虚拟化改善交互体验。', topics: ['memo', 'callback', 'transition', 'virtual-list'] },
   { id: 'vite', title: 'Vite 工程化', en: 'BUILD WITH VITE', description: '让开发与构建过程更轻快。', topics: ['env', 'modules'] },
 ]
@@ -232,14 +234,14 @@ export const topics = {
     code: `import { useEffect, useState } from 'react';\n\nexport default function Timer() {\n  const [seconds, setSeconds] = useState(0);\n  const [running, setRunning] = useState(false);\n\n  useEffect(() => {\n    if (!running) return;\n    const id = setInterval(() => {\n      setSeconds(value => value + 1);\n    }, 1000);\n    return () => clearInterval(id);\n  }, [running]);\n\n  return (\n    <>\n      <span>{seconds}s</span>\n      <button onClick={() => setRunning(v => !v)}>\n        {running ? '暂停' : '开始'}\n      </button>\n    </>\n  );\n}`, Demo: EffectDemo,
   },
   memo: {
-    group: 'performance', number: '10', title: 'useMemo 派生数据', subtitle: '只在依赖变化时重新计算。', time: '4 min',
+    group: 'performance', number: '11', title: 'useMemo 派生数据', subtitle: '只在依赖变化时重新计算。', time: '4 min',
     lead: 'useMemo 会缓存一次计算的结果，直到依赖发生变化。它适用于开销较大的计算，也可以帮助稳定传给子组件的引用。',
     points: ['先保证计算逻辑正确，再根据性能需要添加缓存。', '依赖数组必须包含计算中使用的响应式值。', '简单计算不必为了使用 useMemo 而使用它。'],
     question: 'useMemo 能代替 useEffect 吗？', answer: '不能。useMemo 用于渲染期间的纯计算，useEffect 用于与外部系统同步。',
     code: `import { useMemo, useState } from 'react';\n\nconst fruits = ['Apple', 'Apricot', 'Banana', 'Blueberry',\n  'Cherry', 'Grape', 'Mango', 'Orange', 'Peach'];\n\nexport default function FruitSearch() {\n  const [query, setQuery] = useState('');\n  const results = useMemo(() =>\n    fruits.filter(fruit =>\n      fruit.toLowerCase().includes(query.toLowerCase())\n    ), [query]\n  );\n\n  return (\n    <>\n      <input value={query} onChange={e => setQuery(e.target.value)} />\n      {results.map(fruit => <span key={fruit}>{fruit}</span>)}\n    </>\n  );\n}`, Demo: MemoDemo,
   },
   callback: {
-    group: 'performance', number: '11', title: 'useCallback 稳定回调', subtitle: '让依赖不变时的函数引用保持稳定。', time: '5 min',
+    group: 'performance', number: '12', title: 'useCallback 稳定回调', subtitle: '让依赖不变时的函数引用保持稳定。', time: '5 min',
     lead: 'useCallback 缓存函数本身，而 useMemo 缓存计算结果。把回调传给 React.memo 子组件时，如果依赖没有变化，稳定的函数引用能帮助子组件跳过由父组件无关更新带来的重新渲染；它不是给每个事件函数都套一层的规则。',
     points: ['useCallback(fn, deps) 返回函数；依赖改变时才换成新的函数引用。', '与 React.memo 配合、或自定义 Hook 向外返回回调时更可能有价值；先定位实际重渲染问题。', '依赖必须完整。若更新只需要旧状态，可用函数式 setter，避免为读取旧值而增加依赖。'],
     question: '为什么只给普通子组件传 useCallback，不一定能减少渲染？',
@@ -247,7 +249,7 @@ export const topics = {
     code: callbackCode, Demo: CallbackDemo,
   },
   transition: {
-    group: 'performance', number: '12', title: 'useTransition 非紧急更新', subtitle: '让输入先响应，较重的界面更新随后完成。', time: '5 min',
+    group: 'performance', number: '13', title: 'useTransition 非紧急更新', subtitle: '让输入先响应，较重的界面更新随后完成。', time: '5 min',
     lead: 'useTransition 返回 isPending 和 startTransition。把不需要立即显示的状态更新放进 startTransition，React 就可以优先处理输入等紧急交互，并在有新输入时中断尚未完成的过渡渲染。',
     points: ['受控输入的 value 要用普通 state 立即更新；不要把控制输入框的 setter 放进 Transition。', 'startTransition 中的函数会立即执行；被标记为非紧急的是其中同步安排的状态更新，并非延迟调用函数。', 'isPending 可以显示等待反馈。Transition 不会加速计算、替代防抖或自动取消网络请求。'],
     question: '搜索框为什么要维护 input 和 query 两份状态？',
@@ -284,8 +286,16 @@ export const topics = {
       { name: 'store.js', code: zustandStoreCode },
     ], Demo: ZustandDemo, resetDemo: resetProgressStore,
   },
+  'react19-hooks': {
+    group: 'advanced', number: '10', title: 'React 19 新 Hook 与 use API', subtitle: '表单 Action、乐观更新与 Effect 事件。', time: '9 min',
+    lead: 'React 19.0 新增 useActionState、useOptimistic 与 React DOM 的 useFormStatus；React 19.2 又加入 useEffectEvent。use 是同一时期引入的资源读取 API，但不是 Hook。当前站点依赖 React 18，左侧代码仅供 React 19 对应版本使用，右侧是概念交互，不会执行这些新 API。',
+    points: ['useActionState 管理 Action 结果与 pending；useFormStatus 让表单内部子组件读取父 form 的提交状态。', 'useOptimistic 先显示临时结果，完成后回归基础状态；useEffectEvent（19.2+）让 Effect 事件逻辑读取最新值。', 'use 可以读取 Promise 或 Context，官方将它归类为 API 而非 Hook；useTransition 则早在 React 18 就已存在。'],
+    question: 'React 19 新增的 use 是 Hook 吗？为什么它能在条件分支中调用？',
+    answer: '不是。React 官方把 use 归类为 API；它用于渲染期间读取 Promise 或 Context，和普通 Hook 的调用规则不同，可以在条件分支或循环中调用，但仍必须在组件或自定义 Hook 中使用。use(promise) 还需要稳定的 Promise，并配合 Suspense 处理等待状态。',
+    files: react19Files, Demo: React19GuideDemo, previewMode: 'concept',
+  },
   'virtual-list': {
-    group: 'performance', number: '13', title: 'React 虚拟列表', subtitle: '只渲染屏幕附近的内容，而非整张长列表。', time: '12 min',
+    group: 'performance', number: '14', title: 'React 虚拟列表', subtitle: '只渲染屏幕附近的内容，而非整张长列表。', time: '12 min',
     lead: '虚拟列表会根据滚动位置计算可见区间，只挂载这个区间和少量缓冲项。一个与完整列表等高的占位容器保留滚动条长度，再把可见行放到正确位置。',
     points: ['固定行高时，可用 Math.floor(scrollTop / rowHeight) 求出首个可见项。', '上下增加 overscan 缓冲项，避免快速滚动时出现短暂空白。', '数据量仍然存在内存中；虚拟化主要减少 DOM 数量和渲染开销。'],
     solutions: [
@@ -297,14 +307,14 @@ export const topics = {
     code: `import { useRef, useState } from 'react';\n\nconst items = Array.from({ length: 10000 }, (_, i) => ({\n  id: i + 1, label: '第 ' + (i + 1) + ' 条学习记录'\n}));\nconst rowHeight = 44;\nconst viewportHeight = 220;\nconst overscan = 3;\n\nexport default function VirtualList() {\n  const viewportRef = useRef(null);\n  const [scrollTop, setScrollTop] = useState(0);\n  const first = Math.floor(scrollTop / rowHeight);\n  const start = Math.max(0, first - overscan);\n  const end = Math.min(items.length, first +\n    Math.ceil(viewportHeight / rowHeight) + overscan + 1);\n  const visible = items.slice(start, end);\n\n  function jumpTo(index) {\n    const viewport = viewportRef.current;\n    viewport.scrollTop = (index - 1) * rowHeight;\n    setScrollTop(viewport.scrollTop);\n  }\n\n  return (\n    <>\n      <div ref={viewportRef}\n        onScroll={e => setScrollTop(e.currentTarget.scrollTop)}\n        style={{ height: viewportHeight, overflowY: 'auto' }}>\n        <div style={{ height: items.length * rowHeight,\n          position: 'relative' }}>\n          {visible.map(item => (\n            <div key={item.id} style={{ position: 'absolute',\n              top: (item.id - 1) * rowHeight, height: rowHeight }}>\n              {item.label}\n            </div>\n          ))}\n        </div>\n      </div>\n      <button onClick={() => jumpTo(5000)}>跳到第 5000 条</button>\n    </>\n  );\n}`, Demo: VirtualListDemo,
   },
   env: {
-    group: 'vite', number: '14', title: '环境变量与模式', subtitle: '为不同运行环境配置不同数据。', time: '4 min',
+    group: 'vite', number: '15', title: '环境变量与模式', subtitle: '为不同运行环境配置不同数据。', time: '4 min',
     lead: 'Vite 会通过 import.meta.env 暴露内建环境信息，并根据运行模式加载对应的 .env 文件。客户端自定义变量需要 VITE_ 前缀。',
     points: ['import.meta.env.MODE 可读取当前模式。', 'import.meta.env.DEV 与 PROD 用于区分开发与生产。', 'VITE_ 变量会进入客户端构建产物，不能存放密钥。'],
     question: '为什么不能把 API 私钥写在 VITE_ 变量中？', answer: 'VITE_ 变量会被打包进客户端代码，任何访问页面的人都有机会读取。',
     code: `function EnvironmentInfo() {\n  return (\n    <dl>\n      <dt>MODE</dt>\n      <dd>{import.meta.env.MODE}</dd>\n      <dt>DEV</dt>\n      <dd>{String(import.meta.env.DEV)}</dd>\n      <dt>BASE_URL</dt>\n      <dd>{import.meta.env.BASE_URL}</dd>\n    </dl>\n  );\n}\n\n// 自定义客户端变量须以 VITE_ 开头。`, Demo: EnvDemo,
   },
   modules: {
-    group: 'vite', number: '15', title: '动态导入与拆包', subtitle: '需要时再加载，让入口更轻。', time: '4 min',
+    group: 'vite', number: '16', title: '动态导入与拆包', subtitle: '需要时再加载，让入口更轻。', time: '4 min',
     lead: 'import() 可以异步加载模块。Vite 在构建时会为动态导入创建独立代码块，浏览器在真正需要时再请求。',
     points: ['动态导入返回 Promise，可用 await 读取模块导出。', '适合低频功能、较大的工具模块或路由级拆包。', '加载中与失败状态也应该有清晰反馈。'],
     question: '静态 import 与动态 import() 有什么区别？', answer: '静态 import 在模块加载时就解析；动态 import() 在执行到该语句时才请求，并返回 Promise。',

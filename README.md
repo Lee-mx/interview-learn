@@ -11,7 +11,7 @@
 3. **亲手试一试**：点击、输入、滚动或切换状态，直接观察结果。
 4. **最后练追问**：展开常见面试问题，检查自己能否解释原理与取舍。
 
-项目定位是可持续补充的面试演示手册。目前的例子都在浏览器本地运行，不依赖后端服务。页面采用明亮、舒展的春日视觉，让较长的学习内容也容易阅读。
+项目定位是可持续补充的面试演示手册。知识点示例都在浏览器本地运行；模拟面试另由 Vite 本地开发服务调用终端 Codex。页面采用明亮、舒展的春日视觉，让较长的学习内容也容易阅读。
 
 ## 整体框架
 
@@ -35,6 +35,7 @@
 | 应用入口与页面 | 挂载 React、导航、Hash 路由、详情页和代码预览 | `src/main.jsx`、`src/App.jsx` |
 | 知识点内容 | 分组、关键说明、示例代码和交互组件 | `src/topics.jsx`、`src/reduxDemo/`、`src/zustandDemo/` |
 | 面试追问 | 按知识点维护可展开的问题与参考思路 | `src/interviewQuestions.js` |
+| 模拟面试 | 从归档抽题、记录回答，由本机 Codex CLI 生成点评、追问与总结 | `src/MockInterviewPage.jsx`、`server/codexInterview.js` |
 | 虚拟列表专题 | 三种库的真实 Demo、源码片段及渲染性能图 | `src/VirtualLibraryDemos.jsx`、`src/PerformanceChart.jsx` |
 | 样式 | 页面视觉、响应式布局与 Tailwind 工具类 | `src/styles.css`、`tailwind.config.js` |
 
@@ -43,7 +44,7 @@
 ### 当前内容
 
 - **React 基础**：组件与 JSX、Props、State、条件渲染、列表与 Key。
-- **React 进阶**：Effect、Context、Redux 与 Zustand 状态管理。
+- **React 进阶**：Effect、Context、Redux 与 Zustand 状态管理，以及 React 19 新 Hook 与 `use` API 的版本化示例。
 - **性能优化**：useMemo 派生数据、useCallback 稳定回调、useTransition 非紧急更新、React 虚拟列表。
 - **Vite 工程化**：环境变量、动态导入。
 
@@ -51,11 +52,15 @@ Redux 专题的示例按 `src/reduxDemo/App.jsx`、`ProgressWidgets.jsx` 和 `st
 
 Zustand 专题沿用相同的跨组件进度场景，按 `src/zustandDemo/` 中的三个文件拆分：业务组件调用 store action，展示组件用 selector 订阅字段，无需 Redux 的 Provider 和 dispatch。Pinia 属于 Vue 生态，本轮暂不加入 React 项目。
 
+React 19 专题放在进阶章节，覆盖 `useActionState`、`useOptimistic`、React DOM 的 `useFormStatus`、19.2 加入的 `useEffectEvent`，以及不是 Hook 的 `use` API。左侧是供 React 19 对应版本使用的源码，右侧仅做概念导览；本站依赖 React 18，不会在页面中执行这些新 API，也没有升级运行依赖。
+
 虚拟列表专题先用手写 Demo 解释可见区间、占位高度和 overscan，再分别用 `react-window`、`@tanstack/react-virtual`、`react-virtuoso` 展示固定行高、动态测量和自动处理行高的写法。每种库都可切换查看核心代码，并在 10,000 条数据中滚动或跳转。页面中的性能图比较 **一次挂载 10,000 行** 与 **只挂载首屏行** 的 React 挂载耗时和 DOM 行数；它是当前浏览器中的教学测量，不代表三个库之间的性能排名。
 
 ### 2024—2026 面试题归档
 
-顶部「面试题归档」菜单进入独立题库。当前收录 **175 道、11 个方向**：JavaScript、CSS、React、系统与性能优化、Webpack、Vite、浏览器与网络、TypeScript、AI 应用、场景题与线上排障、Vue 3。支持按分类浏览和关键词搜索。每道题包含回答思路、延伸追问及核对资料，部分题目附示例代码。扩展题包含 JS 事件循环/防抖/节流/深拷贝手写、React 18/19 Hooks 与 Zustand、AI 流式交互/RAG/Agent，以及跨浏览器兼容、跨设备适配和跨域通信；React 19 题目为面试知识，当前项目仍使用 React 18，示例不应直接复制到运行页面。
+顶部「面试题归档」菜单进入独立题库。当前收录 **184 道、12 个方向**：JavaScript、CSS、React、系统与性能优化、Webpack、Vite、浏览器与网络、TypeScript、AI 应用、场景题与线上排障、Vue 3、面试真题。支持按分类浏览和关键词搜索。每道题包含回答思路、延伸追问及核对资料，部分题目附示例代码。扩展题包含 JS 事件循环/防抖/节流/深拷贝手写、React 18/19 Hooks 与 Zustand、AI 流式交互/RAG/Agent，以及跨浏览器兼容、跨设备适配和跨域通信；React 19 题目为面试知识，当前项目仍使用 React 18，示例不应直接复制到运行页面。
+
+「面试真题」方向收录 9 道题：基础事件循环、async/await 排序、嵌套微任务、Promise 拒绝链、数字/字符串数组交集、深拷贝、子串查找、嵌套属性读取、未知尺寸 CSS 居中。其中 Promise 拒绝链和数组交集题来自用户提供的实际面试题；其余题目围绕公开面经考点自行设计，不宣称为企业原题。每题展示与页面交互共用的源码，并可修改输入、观察运行结果；核心函数有独立边界测试，可运行 `node --test src/bytePractice/bytePractice.test.js`。分类地址是 `#/archive/interview-real`，旧地址 `#/archive/byte-coding` 会自动跳转。
 
 题目参考用户提供的《2024前端面试八股文》和《2025年前端最新场景题面试攻略》，按概念和实际场景合并重复主题，并用当前官方文档核对关键技术说法。2024 资料侧重传统知识模块；2025 资料包含白屏排障、埋点、跨标签页通信、图片加载、工程方案等场景。页面的「2026 备考方向」由这两份资料的主题和当前 AI 应用工程实践推断，**不是**企业原题清单、频率统计或录用预测。旧资料中涉及 Vue 2、过时构建插件或浏览器兼容性的描述，不直接当作现行技术结论。
 
@@ -82,6 +87,12 @@ npm run dev
 ```
 
 打开终端给出的本地地址。检查生产构建可运行 `npm run build`；预览构建产物可运行 `npm run preview`。
+
+### 本地模拟面试
+
+在启动开发服务的同一用户环境中先确认 `codex login status` 显示已登录；若未登录，运行 `codex login`。然后打开 `#/interview`，默认每轮抽取 10 题（也可切换为 3 或 5 题），依次回答、接受追问并生成总结；若所选方向不足 10 题，会从其他方向补齐。页面从现有面试题归档抽题，通过 Vite 本地接口调用 Codex CLI，不需要在浏览器里配置 API Key；接口仅接受本机请求。若 Codex 暂时不可用，页面会如实提示，并可选择题库预设追问继续练习，但预设内容不会标成 AI 结果。
+
+此功能只在 `npm run dev` 的本地开发服务中提供，`npm run build` 的静态产物不含 Codex 接口。Codex CLI 虽在本机启动，实际模型请求仍需网络；提交的题目、参考思路和你的回答会发往所使用的模型服务，勿输入敏感信息。建议内测时用 `npm run dev -- --host 127.0.0.1`，只在本机开放开发服务。
 
 ## 扩展一个知识点
 
