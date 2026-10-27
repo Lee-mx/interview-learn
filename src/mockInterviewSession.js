@@ -1,5 +1,16 @@
 export const INTERVIEW_STORAGE_KEY = 'interview-lab:v1'
 
+export function validAttempt(value) {
+  return value && typeof value.sessionId === 'string' && Number.isFinite(value.answeredAt)
+    && typeof value.skipped === 'boolean'
+    && ['answer', 'followUp', 'followUpAnswer'].every(key => typeof value[key] === 'string')
+}
+
+export function validComparison(value) {
+  return value && typeof value.summary === 'string'
+    && ['improved', 'remaining', 'nextSteps'].every(key => Array.isArray(value[key]) && value[key].every(item => typeof item === 'string'))
+}
+
 function shuffle(items, random) {
   const result = [...items]
   for (let i = result.length - 1; i > 0; i--) {
@@ -17,9 +28,9 @@ export function selectQuestions(bank, category, count, random = Math.random) {
     .slice(0, Math.max(0, count - selected.length))]
 }
 
-export function createInterview(questions, { category, mode }) {
+export function createInterview(questions, { category, mode, practiceKind = 'general', baselines = {} }) {
   return {
-    version: 1, id: crypto.randomUUID(), category, mode,
+    version: 1, id: crypto.randomUUID(), category, mode, practiceKind, baselines,
     questionIds: questions.map(item => item.id), index: 0, stage: 'answer',
     answer: '', followUpAnswer: '', pending: null, history: [], markedIds: [],
     elapsedSeconds: 0, startedAt: Date.now(), report: null,
@@ -32,7 +43,7 @@ export function completeQuestion(session, question, skipped = false) {
     questionId: question.id, question: question.title,
     answer: session.answer.trim(), feedback: '', followUp: '', source: 'skipped',
     ...(!skipped && session.pending ? session.pending : {}),
-    followUpAnswer: skipped ? '' : session.followUpAnswer.trim(), skipped,
+    followUpAnswer: skipped ? '' : session.followUpAnswer.trim(), skipped, completedAt: Date.now(),
   }
   const history = [...session.history, record]
   const done = history.length === session.questionIds.length
@@ -68,9 +79,20 @@ export function restoreWorkspace(raw, bank) {
         || !['strengths', 'improvements', 'nextSteps'].every(key => strings(session.report[key])))) return false
       return true
     }
+    const normalize = session => ({
+      ...session,
+      ...(session.baselines ? { baselines: Object.fromEntries(Object.entries(session.baselines)
+        .filter(([id, attempt]) => session.questionIds.includes(id) && validAttempt(attempt)
+          && attempt.sessionId !== session.id && attempt.answeredAt <= session.startedAt)) } : {}),
+      history: session.history.map(record => {
+        if (!record.comparison || validComparison(record.comparison)) return record
+        const { comparison, ...rest } = record
+        return rest
+      }),
+    })
     return {
-      session: valid(data.session) ? data.session : null,
-      recent: Array.isArray(data.recent) ? data.recent.filter(item => valid(item) && item.stage === 'review').slice(0, 5) : [],
+      session: valid(data.session) ? normalize(data.session) : null,
+      recent: Array.isArray(data.recent) ? data.recent.filter(item => valid(item) && item.stage === 'review').slice(0, 5).map(normalize) : [],
     }
   } catch { return { session: null, recent: [] } }
 }
@@ -98,6 +120,18 @@ export function exportInterview(session, bank) {
       '### 我的回答', '', item.answer || '未作答', '')
     if (item.feedback) lines.push(item.source === 'codex' ? '### AI 点评' : '### 练习说明', '', item.feedback, '')
     if (item.followUp) lines.push('### 追问', '', item.followUp, '', item.followUpAnswer || '未回答追问', '')
+    const previous = session.baselines?.[item.questionId]
+    if (previous) {
+      lines.push('### 上次回答对比', '', '上次练习：' + new Date(previous.answeredAt).toLocaleString('zh-CN'), '',
+        previous.skipped ? '上次已跳过，以下为未提交草稿。' : '上次正式回答：', '', previous.answer || '未作答', '')
+      if (previous.followUp) lines.push('上次追问：' + previous.followUp, '', previous.followUpAnswer || '未回答追问', '')
+    }
+    if (item.comparison) {
+      lines.push('### AI 对比建议', '', item.comparison.summary, '')
+      for (const [key, title] of [['improved', '这次的变化'], ['remaining', '仍需补充'], ['nextSteps', '下一步练习']]) {
+        lines.push('#### ' + title, '', ...item.comparison[key].map(value => '- ' + value), '')
+      }
+    }
     lines.push('### 参考思路', '', ...(question?.answer || []), '')
   })
   return lines.join('\n')

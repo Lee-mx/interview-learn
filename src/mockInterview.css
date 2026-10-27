@@ -166,13 +166,61 @@
 .mi-record-body > p { color: #6f8064; font-size: 13px; margin: 0 0 24px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .mi-reference { border-top: 1px dashed #dce5cf; padding-top: 17px; }
 .mi-reference > summary { color: #71905e; font-size: 11px; cursor: pointer; }
-.mi-reference > summary svg { vertical-align: middle; margin-right: 5px; }
+.mi-reference > summary svg { display: inline-block; vertical-align: middle; margin-right: 5px; }
 .mi-reference p { color: #859776; font-size: 12px; }
 .mi-reference a { display: inline-flex; align-items: center; gap: 5px; color: #689055; font-size: 11px; margin-top: 5px; }
 .mi-reference details { color: #809c6c; font-size: 11px; }
 .mi-reference pre { max-height: 350px; overflow: auto; white-space: pre; background: #26382c; color: #d9e3cf; padding: 18px; border-radius: 8px; font: 11px/1.8 monospace; }
 .mi-empty { padding: 35px; text-align: center; border: 1px dashed #d6e1c8; border-radius: 12px; color: #9aab84; font-size: 12px; }
 .mi-footer { display: flex; justify-content: space-between; gap: 16px; border-top: 1px solid #e4e9d9; padding-top: 20px; margin-top: 34px; color: #a3ac93; font-size: 10px; line-height: 1.8; }
+.mi-review-home { margin-bottom: 24px; background: linear-gradient(120deg, #edf4e7, #fffdf5); }
+.mi-review-intro { display: flex; justify-content: space-between; gap: 20px; }
+.mi-review-intro > svg { flex: none; color: #7f9b69; margin-top: 6px; }
+.mi-review-intro h3 { color: #3c6846; font-size: 22px; margin: 12px 0 8px; line-height: 1.6; }
+.mi-review-intro p { color: #708465; font-size: 12px; margin: 0; }
+.mi-review-overview { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 25px; }
+.mi-review-stats { display: flex; gap: 36px; }
+.mi-review-stats > div { min-width: 60px; }
+.mi-review-stats strong { display: block; font: 29px 'DM Mono', monospace; color: #3e714b; }
+.mi-review-stats span { display: block; margin-top: 8px; font-size: 11px; color: #75866b; }
+.mi-review-start { text-align: right; }
+.mi-review-start p { font-size: 11px; color: #75866b; margin: 10px 0 0; }
+.mi-page .mi-review-policy { color: #73826a; font-size: 11px; margin: 15px 0 0; }
+.mi-library { margin-top: 20px; padding-top: 18px; border-top: 1px solid #d9e4ce; }
+.mi-library > summary { font-size: 12px; color: #527748; cursor: pointer; }
+.mi-library > summary span { margin-left: 10px; font-size: 11px; color: #768d69; }
+.mi-library-tools { display: flex; justify-content: space-between; gap: 14px; margin: 20px 0 12px; }
+.mi-library-tools input { min-width: 0; width: 230px; border: 1px solid #d6e1cc; background: #fffefa; border-radius: 8px; padding: 9px 12px; font: inherit; font-size: 12px; color: #466344; }
+.mi-library-tools input:focus-visible { outline: 2px solid #4a9261; outline-offset: 3px; }
+.mi-weak-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 17px 0; border-bottom: 1px solid #e0e7d6; }
+.mi-weak-row > div { min-width: 0; }
+.mi-weak-row h4 { font-size: 13px; line-height: 1.8; font-weight: 500; margin: 0; color: #476b43; overflow-wrap: anywhere; }
+.mi-weak-row p { font-size: 10px; color: #788b6c; margin: 7px 0 0; }
+.mi-weak-row button { flex: none; font-size: 11px; padding: 8px 12px; }
+.mi-repeat-note { display: flex; gap: 8px; align-items: center; color: #6c8459; background: #f1f6e8; border: 1px dashed #d2dfc2; padding: 11px 13px; border-radius: 8px; font-size: 11px; margin: 0 0 18px; }
+.mi-repeat-note svg { flex: none; }
+.mi-comparison { margin-top: 24px; border-top: 1px solid #e0e7d6; padding-top: 22px; }
+.mi-comparison > .mi-section-title { flex-wrap: wrap; gap: 8px; }
+.mi-comparison > .mi-section-title h4 { color: #466f43; font-size: 14px; margin: 0; }
+.mi-comparison > .mi-section-title > span { font-size: 10px; color: #778b6b; }
+.mi-attempt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; }
+.mi-attempt { min-width: 0; border: 1px solid #e0e6d7; background: #f8faf3; border-radius: 10px; padding: 19px; }
+.mi-attempt:last-child { background: #f0f6e8; border-color: #cfdcbe; }
+.mi-attempt-label { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 12px; }
+.mi-attempt-label strong { font-size: 12px; color: #4c7444; }
+.mi-attempt-label span { font-size: 10px; color: #7e8f73; }
+.mi-attempt p { white-space: pre-wrap; overflow-wrap: anywhere; color: #5c7252; font-size: 13px; margin: 10px 0; }
+.mi-attempt details { border-top: 1px dashed #d7e2ca; padding-top: 12px; margin-top: 16px; }
+.mi-attempt summary { cursor: pointer; font-size: 11px; color: #667f59; }
+.mi-attempt h5 { font-size: 12px; line-height: 1.8; color: #5b7650; margin: 12px 0 5px; overflow-wrap: anywhere; }
+.mi-comparison-result { margin-top: 20px; }
+.mi-comparison-result > p { font-size: 13px; color: #56754d; white-space: pre-wrap; overflow-wrap: anywhere; }
+.mi-comparison-result .mi-report-columns { margin-top: 16px; }
+.mi-comparison-result .mi-report-columns p { font-size: 12px; color: #75876a; }
+.mi-mastery { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 15px; margin-top: 20px; padding: 17px; background: #f7f9ef; border-radius: 9px; }
+.mi-mastery > span { font-size: 11px; color: #738768; }
+.mi-mastery > div { display: flex; gap: 10px; flex-wrap: wrap; }
+.mi-mastery button { font-size: 11px; padding: 10px 13px; }
 @media (max-width: 1100px) {
   .mi-setup-layout { grid-template-columns: minmax(0, 1fr) 275px; gap: 16px; }
   .mi-card { padding: 23px; }
@@ -182,6 +230,15 @@
   .mi-editor-footer { flex-direction: column; gap: 5px; }
 }
 @media (max-width: 760px) {
+  .mi-review-overview { align-items: stretch; flex-direction: column; gap: 22px; }
+  .mi-review-stats { justify-content: space-between; gap: 15px; }
+  .mi-review-start { text-align: left; }
+  .mi-review-start .mi-primary { width: 100%; }
+  .mi-review-intro h3 { font-size: 20px; }
+  .mi-attempt-grid { grid-template-columns: 1fr; }
+  .mi-library-tools { flex-wrap: wrap; }
+  .mi-library-tools input { width: 100%; }
+  .mi-weak-row { align-items: flex-start; flex-direction: column; gap: 12px; }
   .mi-page-header { flex-direction: column; gap: 14px; }
   .mi-page-header h2 em { display: block; }
   .mi-page-header.is-compact { gap: 10px; }

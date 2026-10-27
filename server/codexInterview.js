@@ -77,12 +77,36 @@ const reportSchema = {
   additionalProperties: false,
 }
 
+const comparisonSchema = {
+  type: 'object',
+  properties: {
+    summary: { type: 'string' },
+    improved: { type: 'array', items: { type: 'string' } },
+    remaining: { type: 'array', items: { type: 'string' } },
+    nextSteps: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['summary', 'improved', 'remaining', 'nextSteps'],
+  additionalProperties: false,
+}
+
 function boundedText(value, limit = 4000) {
   return typeof value === 'string' ? value.trim().slice(0, limit) : ''
 }
 
 export function validateInterviewRequest(body) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return null
+  if (body.mode === 'compare') {
+    const attempt = value => ({
+      answer: boundedText(value?.answer), followUp: boundedText(value?.followUp, 350),
+      followUpAnswer: boundedText(value?.followUpAnswer),
+    })
+    const previous = attempt(body.previous)
+    const current = attempt(body.current)
+    const question = boundedText(body.question, 350)
+    const reference = boundedText(body.reference, 3500)
+    if (!question || !previous.answer || !current.answer || body.previous?.skipped !== false || body.current?.skipped !== false) return null
+    return { mode: 'compare', question, reference, previous, current }
+  }
   if (body.mode !== 'feedback' && body.mode !== 'report') return null
   if (!Array.isArray(body.history) || body.history.length > 10) return null
 
@@ -109,7 +133,9 @@ export function validateInterviewRequest(body) {
 }
 
 export function buildInterviewPrompt(input) {
-  const task = input.mode === 'feedback'
+  const task = input.mode === 'compare'
+    ? '对比同一道题的 previous（上次）和 current（这次）回答，结合参考思路给出中文建议。summary 用 2～3 句。improved 列出这次新补充且正确的具体知识点，并简述两次回答中的依据；若没有实质进步就返回空数组，不因字数增加而赞扬。remaining 列出仍遗漏、错误或退步的点。nextSteps 给出可执行的练习建议。三个数组各最多 3 条。两次追问可能不同，须区分主问题与追问的表现。不要照搬错误参考内容；不要推断未展示的能力，不要自动判定已掌握。'
+    : input.mode === 'feedback'
     ? '根据参考思路点评当前回答，并给出一道紧扣回答的追问。feedback 用 2～4 句中文，指出一个具体优点和一个可改进点；followUp 只写一个问题，不泄露完整参考答案。'
     : '根据整场面试记录生成简明总结。summary 用 2～3 句中文；strengths、improvements、nextSteps 各给 1～3 条具体内容。skipped 为 true 的题目表示已跳过，即使 answer 有文字也只是未提交草稿，不当作正式作答。source 为 question-bank 的 feedback 是题库练习说明，不是 AI 评价。若某题跳过或追问未回答，要如实指出，不要编造成绩。'
 
@@ -189,7 +215,8 @@ export async function runCodexInterview(input) {
     if (!status.ready) return { status: 503, data: { error: status.message } }
     workdir = await mkdtemp(join(tmpdir(), 'interview-codex-'))
     const schemaFile = join(workdir, 'schema.json')
-    await writeFile(schemaFile, JSON.stringify(input.mode === 'feedback' ? feedbackSchema : reportSchema), 'utf8')
+    const schema = input.mode === 'compare' ? comparisonSchema : input.mode === 'feedback' ? feedbackSchema : reportSchema
+    await writeFile(schemaFile, JSON.stringify(schema), 'utf8')
     const result = await runProcess(CODEX_BIN, [
       'exec', '--sandbox', 'read-only', '--ephemeral', '--ignore-user-config',
       '--skip-git-repo-check', '--output-schema', schemaFile, '-C', workdir, '-',
@@ -209,6 +236,10 @@ export async function runCodexInterview(input) {
     const summary = boundedText(parsed.summary, 1200)
     const list = key => Array.isArray(parsed[key]) ? parsed[key].map(value => boundedText(value, 350)).filter(Boolean).slice(0, 3) : []
     if (!summary) return { status: 502, data: { error: 'Codex 未生成有效的总结，请重试。' } }
+    if (input.mode === 'compare') {
+      if (!['improved', 'remaining', 'nextSteps'].every(key => Array.isArray(parsed[key]))) return { status: 502, data: { error: 'Codex 未生成完整的对比建议，请重试。' } }
+      return { status: 200, data: { summary, improved: list('improved'), remaining: list('remaining'), nextSteps: list('nextSteps') } }
+    }
     return { status: 200, data: { summary, strengths: list('strengths'), improvements: list('improvements'), nextSteps: list('nextSteps') } }
   } catch (error) {
     return { status: 503, data: { error: error.code === 'ENOENT' ? '未找到 Codex CLI。请确认 codex 命令在 PATH 中。' : 'Codex 本地调用失败，请检查开发服务终端。' } }

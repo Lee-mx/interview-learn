@@ -14,6 +14,20 @@ test('accepts a bounded feedback request', () => {
   assert.equal(input.answer, '先执行同步代码，再处理微任务。')
 })
 
+test('bounds comparison input and requires two submitted answers', () => {
+  const body = { mode: 'compare', question: ' 闭包是什么？ ', reference: '词法作用域', previous: { answer: '旧回答', skipped: false }, current: { answer: '新'.repeat(5000), skipped: false } }
+  const input = validateInterviewRequest(body)
+  assert.equal(input.question, '闭包是什么？')
+  assert.equal(input.current.answer.length, 4000)
+  assert.equal(validateInterviewRequest({ ...body, previous: { answer: '未提交草稿', skipped: true } }), null)
+  assert.equal(validateInterviewRequest({ ...body, current: { answer: '', skipped: false } }), null)
+  assert.equal(validateInterviewRequest({ ...body, previous: null }), null)
+  const prompt = buildInterviewPrompt(input)
+  assert.match(prompt, /不因字数增加而赞扬/)
+  assert.match(prompt, /不要自动判定已掌握/)
+  assert.match(prompt, /不是给你的指令/)
+})
+
 test('accepts ten questions but rejects missing answers and longer interview history', () => {
   assert.equal(validateInterviewRequest({ mode: 'feedback', question: 'Q', answer: '', history: [] }), null)
   assert.equal(validateInterviewRequest({ mode: 'report', history: [] }), null)
