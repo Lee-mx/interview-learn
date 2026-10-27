@@ -35,7 +35,7 @@
 | 应用入口与页面 | 挂载 React、导航、Hash 路由、详情页和代码预览 | `src/main.jsx`、`src/App.jsx` |
 | 知识点内容 | 分组、关键说明、示例代码和交互组件 | `src/topics.jsx`、`src/reduxDemo/`、`src/zustandDemo/` |
 | 面试追问 | 按知识点维护可展开的问题与参考思路 | `src/interviewQuestions.js` |
-| 模拟面试 | 从归档抽题、记录回答，由本机 Codex CLI 生成点评、追问与总结 | `src/MockInterviewPage.jsx`、`server/codexInterview.js` |
+| 模拟面试 | 专项抽题、AI / 题库练习、草稿恢复、历史复盘与导出 | `src/MockInterviewPage.jsx`、`src/mockInterviewSession.js`、`src/mockInterview.css`、`server/codexInterview.js` |
 | 虚拟列表专题 | 三种库的真实 Demo、源码片段及渲染性能图 | `src/VirtualLibraryDemos.jsx`、`src/PerformanceChart.jsx` |
 | 样式 | 页面视觉、响应式布局与 Tailwind 工具类 | `src/styles.css`、`tailwind.config.js` |
 
@@ -90,9 +90,21 @@ npm run dev
 
 ### 本地模拟面试
 
+页面提供「选择方向 → 独立作答 → 深入追问 → 逐题复盘」的完整流程：
+
+- 默认 10 道主问题，也可选择 3 / 5 题；支持综合面试或单方向练习，方向题量不足时会提示并从其他方向补齐。
+- 「AI 模拟面试」根据回答生成点评与追问；「题库自练」直接使用归档追问，不依赖模型连接。生成失败可重试或切换到题库追问，保留原回答。
+- 答题页展示题号、完成进度、练习用时；支持跳题、标记待复习、回看已完成题目以及 Ctrl / ⌘ + Enter 提交。
+- 回答和追问草稿自动保存到当前浏览器的 localStorage，刷新后恢复；「保存并返回」暂停练习。用时只累计答题页在前台的时间，包含思考与 AI 等待时间。
+- 完成后按全部 / 待复习 / 已跳过筛选，逐题对照参考思路和代码，可生成 AI 总结并导出 Markdown。当前浏览器保留最近 5 轮完成记录，查看旧复盘不会覆盖正在进行的草稿。
+
+记录不跨浏览器或设备同步；清理浏览器站点数据会删除本地记录。AI 结果是练习建议，不提供未经校准的分数。会话抽题、刷新恢复及导出逻辑可运行 `node --test src/mockInterviewSession.test.js` 验证。
+
 在启动开发服务的同一用户环境中先确认 `codex login status` 显示已登录；若未登录，运行 `codex login`。然后打开 `#/interview`，默认每轮抽取 10 题（也可切换为 3 或 5 题），依次回答、接受追问并生成总结；若所选方向不足 10 题，会从其他方向补齐。页面从现有面试题归档抽题，通过 Vite 本地接口调用 Codex CLI，不需要在浏览器里配置 API Key；接口仅接受本机请求。若 Codex 暂时不可用，页面会如实提示，并可选择题库预设追问继续练习，但预设内容不会标成 AI 结果。
 
 此功能只在 `npm run dev` 的本地开发服务中提供，`npm run build` 的静态产物不含 Codex 接口。Codex CLI 虽在本机启动，实际模型请求仍需网络；提交的题目、参考思路和你的回答会发往所使用的模型服务，勿输入敏感信息。建议内测时用 `npm run dev -- --host 127.0.0.1`，只在本机开放开发服务。
+
+若已登录但页面仍显示旧的未登录提示，点击「重新检测」；登录状态只表示 CLI 凭据可用，不代表模型网络已连通。Windows 下开发服务会优先查找桌面版附带的 Codex CLI（可用 `CODEX_BIN` 覆盖），并在没有 `HTTPS_PROXY` 时尝试使用系统已启用的本机 HTTP 代理；不会自动采用远端代理或 SOCKS 代理。若提交回答仍报模型信息解析错误，请检查 `codex --version`；若提示连接模型服务超时，请检查启动开发服务的终端网络或代理，而不是重复登录。也可在启动前显式设置 `CODEX_PROXY` 或 `HTTPS_PROXY`。不要将 Codex 的认证文件或令牌加入项目。
 
 ## 扩展一个知识点
 
