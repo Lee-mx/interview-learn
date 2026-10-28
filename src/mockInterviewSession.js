@@ -1,3 +1,5 @@
+import { feedbackLabel, normalizeProvider, resultProviderName } from './interviewProviders.js'
+
 export const INTERVIEW_STORAGE_KEY = 'interview-lab:v1'
 
 export function validAttempt(value) {
@@ -28,9 +30,9 @@ export function selectQuestions(bank, category, count, random = Math.random) {
     .slice(0, Math.max(0, count - selected.length))]
 }
 
-export function createInterview(questions, { category, mode, practiceKind = 'general', baselines = {} }) {
+export function createInterview(questions, { category, mode, practiceKind = 'general', baselines = {}, provider = 'codex' }) {
   return {
-    version: 1, id: crypto.randomUUID(), category, mode, practiceKind, baselines,
+    version: 1, id: crypto.randomUUID(), category, mode, practiceKind, baselines, provider: normalizeProvider(provider),
     questionIds: questions.map(item => item.id), index: 0, stage: 'answer',
     answer: '', followUpAnswer: '', pending: null, history: [], markedIds: [],
     elapsedSeconds: 0, startedAt: Date.now(), report: null,
@@ -81,6 +83,7 @@ export function restoreWorkspace(raw, bank) {
     }
     const normalize = session => ({
       ...session,
+      provider: normalizeProvider(session.provider),
       ...(session.baselines ? { baselines: Object.fromEntries(Object.entries(session.baselines)
         .filter(([id, attempt]) => session.questionIds.includes(id) && validAttempt(attempt)
           && attempt.sessionId !== session.id && attempt.answeredAt <= session.startedAt)) } : {}),
@@ -108,7 +111,7 @@ export function exportInterview(session, bank) {
     '题目：' + session.questionIds.length + ' 道 · 用时 ' + formatDuration(session.elapsedSeconds), '',
   ]
   if (session.report) {
-    lines.push('## AI 总结', '', session.report.summary, '')
+    lines.push('## AI 总结 · ' + resultProviderName(session.report), '', session.report.summary, '')
     for (const [key, title] of [['strengths', '表现较好'], ['improvements', '需要补强'], ['nextSteps', '下一步练习']]) {
       lines.push('### ' + title, '', ...session.report[key].map(item => '- ' + item), '')
     }
@@ -118,7 +121,7 @@ export function exportInterview(session, bank) {
     lines.push('## ' + (index + 1) + '. ' + item.question, '',
       '状态：' + (item.skipped ? '已跳过' : '已作答') + (session.markedIds.includes(item.questionId) ? ' · 待复习' : ''), '',
       '### 我的回答', '', item.answer || '未作答', '')
-    if (item.feedback) lines.push(item.source === 'codex' ? '### AI 点评' : '### 练习说明', '', item.feedback, '')
+    if (item.feedback) lines.push('### ' + feedbackLabel(item), '', item.feedback, '')
     if (item.followUp) lines.push('### 追问', '', item.followUp, '', item.followUpAnswer || '未回答追问', '')
     const previous = session.baselines?.[item.questionId]
     if (previous) {
@@ -127,7 +130,7 @@ export function exportInterview(session, bank) {
       if (previous.followUp) lines.push('上次追问：' + previous.followUp, '', previous.followUpAnswer || '未回答追问', '')
     }
     if (item.comparison) {
-      lines.push('### AI 对比建议', '', item.comparison.summary, '')
+      lines.push('### AI 对比建议 · ' + resultProviderName(item.comparison), '', item.comparison.summary, '')
       for (const [key, title] of [['improved', '这次的变化'], ['remaining', '仍需补充'], ['nextSteps', '下一步练习']]) {
         lines.push('#### ' + title, '', ...item.comparison[key].map(value => '- ' + value), '')
       }

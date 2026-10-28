@@ -11,7 +11,7 @@
 3. **亲手试一试**：点击、输入、滚动或切换状态，直接观察结果。
 4. **最后练追问**：展开常见面试问题，检查自己能否解释原理与取舍。
 
-项目定位是可持续补充的面试演示手册。知识点示例都在浏览器本地运行；模拟面试另由 Vite 本地开发服务调用终端 Codex。页面采用明亮、舒展的春日视觉，让较长的学习内容也容易阅读。
+项目定位是可持续补充的面试演示手册。知识点示例都在浏览器本地运行；模拟面试另由 Vite 本地开发服务调用终端 Codex 或 MiniMax。页面采用明亮、舒展的春日视觉，让较长的学习内容也容易阅读。
 
 ## 整体框架
 
@@ -35,7 +35,7 @@
 | 应用入口与页面 | 挂载 React、导航、Hash 路由、详情页和代码预览 | `src/main.jsx`、`src/App.jsx` |
 | 知识点内容 | 分组、关键说明、示例代码和交互组件 | `src/topics.jsx`、`src/reduxDemo/`、`src/zustandDemo/` |
 | 面试追问 | 按知识点维护可展开的问题与参考思路 | `src/interviewQuestions.js` |
-| 模拟面试 | 专项抽题、AI / 题库练习、草稿恢复、历史复盘与导出 | `src/MockInterviewPage.jsx`、`src/mockInterviewSession.js`、`src/mockInterview.css`、`server/codexInterview.js` |
+| 模拟面试 | 专项抽题、双 AI 服务切换、草稿恢复、历史复盘与导出 | `src/MockInterviewPage.jsx`、`src/mockInterviewSession.js`、`server/interviewServer.js`、`server/codexInterview.js`、`server/minimaxInterview.js` |
 | 虚拟列表专题 | 三种库的真实 Demo、源码片段及渲染性能图 | `src/VirtualLibraryDemos.jsx`、`src/PerformanceChart.jsx` |
 | 样式 | 页面视觉、响应式布局与 Tailwind 工具类 | `src/styles.css`、`tailwind.config.js` |
 
@@ -94,20 +94,30 @@ npm run dev
 
 - 默认 10 道主问题，也可选择 3 / 5 题；支持综合面试或单方向练习，方向题量不足时会提示并从其他方向补齐。
 - 「AI 模拟面试」根据回答生成点评与追问；「题库自练」直接使用归档追问，不依赖模型连接。生成失败可重试或切换到题库追问，保留原回答。
+- 页面顶部可选择 Codex 或 MiniMax，默认 Codex。选择会随本轮和浏览器偏好保存；切换保留答案及追问草稿，仅影响后续请求。点评、复盘报告、同题对比及 Markdown 导出分别标注真实来源；旧版 AI 记录继续归属 Codex。生成期间暂时禁用切换，失败后可切换另一服务重试，不会自动发送给其他服务。
+- 「AI 面试服务 → 打开 AI 对话」提供独立的流式聊天弹窗。先点击「检测并连接」，完成一条真实模型请求后才开放发送；仅有 CLI 登录状态不会开放聊天。验证空闲 3 分钟过期，每次成功回复会续期；服务端也校验验证结果，失败后需重新检测。检测会消耗少量模型额度。
+- 对话支持 Codex / MiniMax 独立记录、停止生成、清空、Enter 发送与 Shift + Enter 换行。关闭弹窗会终止当前请求，已收到文字保留；失败或停止的回复不加入下一轮上下文。最多保留当前页面中每个服务最近 20 轮，发送最近 8 轮完整记录；刷新或离开模拟面试页会清除聊天，不影响面试草稿和复盘。
 - 答题页展示题号、完成进度、练习用时；支持跳题、标记待复习、回看已完成题目以及 Ctrl / ⌘ + Enter 提交。
 - 回答和追问草稿自动保存到当前浏览器的 localStorage，刷新后恢复；「保存并返回」暂停练习。用时只累计答题页在前台的时间，包含思考与 AI 等待时间。
 - 完成后按全部 / 待复习 / 已跳过筛选，逐题对照参考思路和代码，可生成 AI 总结并导出 Markdown。当前浏览器保留最近 5 轮完成记录，查看旧复盘不会覆盖正在进行的草稿。
 - 「今日复习」自动收集跳过和主动标记的问题，展示到期可复习、待掌握、已确认掌握的数量。旧版保留的练习会在首次打开时导入；薄弱题库独立于最近 5 轮保存，每题保留最近两次记录和累计练习次数。
 - 「练我的薄弱点」沿用当前题量（默认 10 题）和 AI / 自练方式，按复习时间先选薄弱题，不足时补充不重复的拓展题。重答后默认 3 天后再练，跳过则立即回到待复习队列；可手动确认掌握、安排 3 天后再练或重新加入复习。
-- 同题重答开始时固定一份上次回答，独立作答和追问阶段隐藏旧答案。完成后在逐题复盘或已答题回看中并排展示两次回答；若两次均正式作答，可按需让本机 Codex 分析具体进步、遗漏与下一步练习。跳题草稿不参与 AI 对比，AI 不自动更改掌握状态。对比结果随当前复盘保存，也包含在 Markdown 导出中。
+- 同题重答开始时固定一份上次回答，独立作答和追问阶段隐藏旧答案。完成后在逐题复盘或已答题回看中并排展示两次回答；若两次均正式作答，可按需让所选 AI 服务分析具体进步、遗漏与下一步练习。跳题草稿不参与 AI 对比，AI 不自动更改掌握状态。对比结果随当前复盘保存，也包含在 Markdown 导出中。
 
 记录不跨浏览器或设备同步；清理浏览器站点数据会删除本地记录。AI 结果是练习建议，不提供未经校准的分数。会话抽题、刷新恢复及导出逻辑可运行 `node --test src/mockInterviewSession.test.js` 验证。
 
-薄弱题库、历史迁移、重答对比和本地接口的检查可运行 `node --test src/mockInterviewSession.test.js src/interviewReview.test.js server/codexInterview.test.js`。相关实现位于 `src/interviewReview.js` 与 `src/InterviewReviewPanel.jsx`。取消某一轮的书签不会删除薄弱题记录；使用 AI 对比时会向模型服务发送该题参考思路和两次回答。
+薄弱题库、历史迁移、重答对比和双服务接口的检查可运行 `node --test src/mockInterviewSession.test.js src/interviewReview.test.js src/interviewProviders.test.js server/codexInterview.test.js server/interviewProviders.test.js`。相关实现位于 `src/interviewReview.js` 与 `src/InterviewReviewPanel.jsx`。取消某一轮的书签不会删除薄弱题记录；使用 AI 对比时会向所选模型服务发送该题参考思路和两次回答。
 
-在启动开发服务的同一用户环境中先确认 `codex login status` 显示已登录；若未登录，运行 `codex login`。然后打开 `#/interview`，默认每轮抽取 10 题（也可切换为 3 或 5 题），依次回答、接受追问并生成总结；若所选方向不足 10 题，会从其他方向补齐。页面从现有面试题归档抽题，通过 Vite 本地接口调用 Codex CLI，不需要在浏览器里配置 API Key；接口仅接受本机请求。若 Codex 暂时不可用，页面会如实提示，并可选择题库预设追问继续练习，但预设内容不会标成 AI 结果。
+在启动开发服务的同一用户环境中配置需要使用的服务：
 
-此功能只在 `npm run dev` 的本地开发服务中提供，`npm run build` 的静态产物不含 Codex 接口。Codex CLI 虽在本机启动，实际模型请求仍需网络；提交的题目、参考思路和你的回答会发往所使用的模型服务，勿输入敏感信息。建议内测时用 `npm run dev -- --host 127.0.0.1`，只在本机开放开发服务。
+- **Codex**：确认 `codex login status` 显示已登录；若未登录，运行 `codex login`。
+- **MiniMax**：本项目通过官方 `mmx-cli` 调用文本模型。确认 `mmx auth status --non-interactive --quiet --output json` 有可用认证；未安装时可运行 `npm install -g mmx-cli`，再运行 `mmx auth login`。MiniMax Code 的可用资格不等于此 CLI 已配置认证，具体模型和额度以本机 mmx 配置为准。项目沿用 CLI 配置的模型，也可在启动前设置 `MINIMAX_MODEL`；`MMX_BIN` 可指定可执行文件或 JS 入口。Windows 默认自动解析 npm 安装的 JS 入口，避免通过 shell 传递回答。
+
+然后打开 `#/interview` 选择服务。页面从现有归档抽题，通过 `POST /api/interview/generate` 的 `provider` 字段选择服务（`codex` 或 `minimax`）；`GET /api/interview/status` 分别返回两个服务的状态。旧 `/api/interview/codex` 接口仍只接受 Codex 请求。接口仅接受本机请求，不向浏览器返回密钥或认证文件。任一服务不可用时，可切换另一服务或使用题库预设追问继续练习，预设内容不会标成 AI 结果。
+
+聊天接口为 `POST /api/interview/connect` 与 `POST /api/interview/chat`，后者通过 NDJSON 转发真实增量文本，并明确返回完成或失败事件。Codex 聊天使用 [App Server 的公开文本增量事件](https://learn.chatgpt.com/docs/app-server)，创建临时、无环境访问的对话；MiniMax 使用 `mmx text chat --stream --output text`（当前 CLI 的 JSON 模式会缓冲至结束）。不转发推理过程、CLI 日志或认证信息。聊天与面试生成共享每服务的并发限制；关闭弹窗、停止生成或断开浏览器连接会终止对应进程。协议、连通门禁、取消和流式解析检查可运行 `node --test server/interviewChat.test.js src/interviewChatClient.test.js`。
+
+此功能只在 `npm run dev` 的本地开发服务中提供，`npm run build` 的静态产物不含 AI 接口。CLI 虽在本机启动，实际模型请求仍需网络；提交的题目、参考思路和你的回答会发往所选模型服务。建议内测时用 `npm run dev -- --host 127.0.0.1`，只在本机开放开发服务。页面的「已登录 / 已配置」只表示认证检测通过，模型连接和额度在实际提交时验证。MiniMax 的网络设置沿用其 CLI 环境，不自动套用 Codex 的代理配置。
 
 若已登录但页面仍显示旧的未登录提示，点击「重新检测」；登录状态只表示 CLI 凭据可用，不代表模型网络已连通。Windows 下开发服务会优先查找桌面版附带的 Codex CLI（可用 `CODEX_BIN` 覆盖），并在没有 `HTTPS_PROXY` 时尝试使用系统已启用的本机 HTTP 代理；不会自动采用远端代理或 SOCKS 代理。若提交回答仍报模型信息解析错误，请检查 `codex --version`；若提示连接模型服务超时，请检查启动开发服务的终端网络或代理，而不是重复登录。也可在启动前显式设置 `CODEX_PROXY` 或 `HTTPS_PROXY`。不要将 Codex 的认证文件或令牌加入项目。
 

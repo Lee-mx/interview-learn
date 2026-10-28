@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ArrowRight, BookOpen, CheckCircle2, RotateCcw, Sparkles } from 'lucide-react'
 import { reviewQueue } from './interviewReview.js'
+import { resultProviderName } from './interviewProviders.js'
 
 const dateLabel = value => new Date(value).toLocaleDateString('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' })
 
@@ -52,7 +53,7 @@ function AttemptColumn({ title, attempt, date }) {
   </div>
 }
 
-export function AnswerComparison({ item, previous, entry, onCompare, onMastery, busy, waiting, error }) {
+export function AnswerComparison({ item, previous, entry, onCompare, onMastery, busy, waiting, error, providerLabel = 'Codex' }) {
   if (!previous && !entry) return null
   const canCompare = previous && !previous.skipped && !item.skipped && previous.answer.trim() && item.answer.trim()
   return <section className="mi-comparison" aria-label="同题重答复盘">
@@ -60,10 +61,10 @@ export function AnswerComparison({ item, previous, entry, onCompare, onMastery, 
     {previous ? <div className="mi-attempt-grid"><AttemptColumn title="上次回答" attempt={previous} date={previous.answeredAt} /><AttemptColumn title="这次回答" attempt={item} date={item.completedAt} /></div>
       : <p className="mi-review-policy">下次重练会先隐藏这次的回答；完成后，可并排对比两次思路。</p>}
     {previous && !canCompare && <p className="mi-review-policy">{item.skipped ? '这次跳过了问题，先保留记录，下次正式作答后再分析变化。' : '上次没有正式作答。这次的回答会成为下次对比的起点。'}</p>}
-    {item.comparison ? <div className="mi-comparison-result"><span className="mi-eyebrow">AI 对比建议</span><p>{item.comparison.summary}</p><div className="mi-report-columns">{[['improved', '这次补全了什么'], ['remaining', '仍需补充'], ['nextSteps', '下一步怎么练']].map(([key, label]) => <div key={key}><h4>{label}</h4>{item.comparison[key].length ? <ul>{item.comparison[key].map((text, index) => <li key={index}>{text}</li>)}</ul> : <p>本次没有识别到明确内容。</p>}</div>)}</div></div>
-      : canCompare && <button className="mi-secondary" disabled={busy} onClick={onCompare}><Sparkles size={15} /> 分析两次回答的变化</button>}
+    {item.comparison ? <div className="mi-comparison-result"><span className="mi-eyebrow">AI 对比建议 · {resultProviderName(item.comparison)}</span><p>{item.comparison.summary}</p><div className="mi-report-columns">{[['improved', '这次补全了什么'], ['remaining', '仍需补充'], ['nextSteps', '下一步怎么练']].map(([key, label]) => <div key={key}><h4>{label}</h4>{item.comparison[key].length ? <ul>{item.comparison[key].map((text, index) => <li key={index}>{text}</li>)}</ul> : <p>本次没有识别到明确内容。</p>}</div>)}</div></div>
+      : canCompare && <button className="mi-secondary" disabled={busy} onClick={onCompare}><Sparkles size={15} /> 用 {providerLabel} 分析两次回答</button>}
     {waiting}
-    {error && <div className="mi-error" role="alert"><strong>对比暂未完成，两个回答都已保留。</strong><p>{error}</p><button className="mi-text-button" disabled={busy} onClick={onCompare}><RotateCcw size={14} /> 重试对比</button></div>}
+    {error && <div className="mi-error" role="alert"><strong>对比暂未完成，两个回答都已保留。</strong><p>{error}</p><p>可在上方切换服务后重试。</p><button className="mi-text-button" disabled={busy} onClick={onCompare}><RotateCcw size={14} /> 使用 {providerLabel} 重试对比</button></div>}
     {entry && <div className="mi-mastery"><span>{entry.status === 'mastered' ? '掌握状态由你确认，可随时重新加入复习。' : `下次复习：${entry.dueAt <= Date.now() ? '现在可练' : dateLabel(entry.dueAt)}。对照参考思路后，由你决定是否掌握。`}</span><div>
       {entry.status === 'mastered' ? <button className="mi-secondary" onClick={() => onMastery(false)}>重新加入复习</button> : <><button className="mi-secondary" onClick={() => onMastery(false, 3)}>3 天后再练</button><button className="mi-primary" onClick={() => onMastery(true)} disabled={item.skipped || !item.answer.trim()}><CheckCircle2 size={15} /> 确认已掌握</button></>}
     </div></div>}
