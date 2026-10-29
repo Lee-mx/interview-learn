@@ -167,10 +167,12 @@ export const extraQuestions = [
   q('react', 'react-ref-state', '基础', 'useRef 和 useState 分别存什么？改 ref.current 会触发渲染吗？', '状态用于影响视图的数据，ref 用于跨渲染保存可变值。', [
     'useState 更新会安排组件重新渲染，适合显示在界面中的数据。useRef 返回稳定的容器，修改 current 不会触发渲染，适合 DOM 节点、计时器 ID 或不参与绘制的实例值。',
     '不要在渲染期间随意读写 ref.current 来驱动 UI，否则视图与内部值可能不一致。若某个值变化应被用户看到，就应放到状态中或由状态计算。',
+    '配套 Demo 先只累加 ref，再读取它写入 State：前一步不更新展示，后一步才显示累计结果。DOM ref 在提交阶段取得节点，卸载时清空，调用 focus 前应检查节点是否存在。',
   ], '防抖定时器 ID 为什么通常适合存 ref？', ['reactRef', 'reactState']),
   q('react', 'react-reducer', '进阶', '何时用 useReducer，而不是很多个 useState？', '状态转移复杂、动作明确时 reducer 更便于约束。', [
     '当多个字段在同一业务动作中协同变化，或更新规则有多种分支时，useReducer 将“发生了什么”表达为 action，将“怎样更新”集中在纯 reducer 中。dispatch 后 React 再根据新状态安排渲染。',
     'reducer 不应直接修改原状态或放入网络请求等副作用；返回新的状态对象。简单独立字段用 useState 往往更直观，不必为了形式统一强行上 reducer。',
+    '撤销功能可把当前值与历史记录放在同一状态中：add 保存旧值并递增，undo 从历史恢复，reset 回到初始状态。数组使用展开或 slice 生成新引用；dispatch 后当前函数读取的仍是本次渲染快照。',
   ], '请求加载、成功、失败三种状态如何设计成不易出现矛盾的状态机？', ['reactReducer']),
   q('react', 'react-context', '进阶', 'Context 能替代状态管理库吗？为什么消费者会重渲染？', 'Context 传递值；更新粒度取决于 Provider 的 value。', [
     'Context 让后代组件读取上层 Provider 的值，适合主题、语言或当前用户等跨层信息。Provider 的 value 变化时，使用该 Context 的后代会重新渲染；把频繁变化的大对象整体放入一个 Context，可能扩大更新范围。',
@@ -187,6 +189,7 @@ export const extraQuestions = [
   q('react', 'react-error-boundary', '实战', 'Error Boundary 可以捕获哪些错误？异步请求失败怎么办？', '渲染树错误与异步流程错误要分开处理。', [
     'Error Boundary 可捕获子树渲染、生命周期等阶段抛出的错误，并显示降级界面，避免整个页面白屏。它通常不能直接捕获事件处理函数、异步回调或自身内部抛出的错误。',
     '请求错误要在请求层或组件的异步流程中处理，再根据业务状态展示错误、重试或向边界抛出。边界应按路由或功能区域布置，并记录错误信息，不能把所有异常都吞掉。',
+    '恢复时先解除导致失败的业务条件，再重置边界状态或改变 key 重新挂载。示例按钮只设置 broken，真正的异常发生在子组件下一次渲染中，因此能被边界捕获；这与直接在点击回调里 throw 不同。',
   ], '错误边界放在应用根部和某个独立卡片周围，用户体验有什么差异？', ['reactError']),
 
   q('performance', 'perf-budget', '实战', '性能优化前如何建立基线与预算？', '先定义用户场景、指标和设备网络条件。', [

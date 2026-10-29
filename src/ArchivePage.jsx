@@ -77,6 +77,7 @@ export default function ArchivePage({ categoryId, onSelectCategory }) {
             <div className="archive-answer-main"><span className="archive-answer-label">回答思路</span>{question.answer.map((paragraph, index) => <div className="archive-answer-step" key={paragraph}><span>{String(index + 1).padStart(2, '0')}</span><p>{paragraph}</p></div>)}</div>
             {question.example && <div className="archive-example"><div><BookOpen size={15} /> {question.demoId ? '参考实现 · 与下方 Demo 同源' : '一个小例子'}</div><pre><code>{question.example}</code></pre></div>}
             {question.demoId && <ByteSocialDemo id={question.demoId} />}
+            {question.relatedTopic && <div className="archive-sources"><span>配套练习</span><a href={`#/topic/${question.relatedTopic.id}`}>查看知识点与示例 · {question.relatedTopic.title}<ArrowRight size={15} /></a></div>}
             <div className="archive-followup"><span>延伸追问</span><p>{question.followUp}</p></div>
             <div className="archive-sources"><span>核对资料</span>{question.refs.map(id => <a href={archiveReferences[id].url} target="_blank" rel="noopener noreferrer" key={id}>{archiveReferences[id].label}<ArrowUpRight size={13} /></a>)}</div>
           </div>}

@@ -15,6 +15,8 @@ import zustandStoreCode from './zustandDemo/store.js?raw'
 import { resetProgressStore } from './zustandDemo/store.js'
 import React19GuideDemo from './React19GuideDemo.jsx'
 import { react19Files } from './react19Examples.js'
+import { reactAdvancedTopics } from './reactAdvancedTopics.js'
+import { viteTopics } from './viteTopics.jsx'
 
 const softButton = 'rounded-xl border border-[#cfdfce] bg-white px-4 py-2.5 text-sm font-medium text-[#315b46] shadow-sm transition hover:border-[#96bc9d] hover:bg-[#f5fbf2] active:scale-[.98]'
 const solidButton = 'rounded-xl bg-[#326f51] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#245a41] active:scale-[.98]'
@@ -163,11 +165,11 @@ function VirtualListDemo() {
 function EnvDemo() {
   return <div className="demo-list">
     <span className="demo-overline">VITE RUNTIME INFO</span>
-    <h3 className="demo-title mb-5">当前开发环境</h3>
+    <h3 className="demo-title mb-5">当前运行环境</h3>
     <div className="env-row"><span>MODE</span><strong>{import.meta.env.MODE}</strong></div>
     <div className="env-row"><span>DEV</span><strong>{String(import.meta.env.DEV)}</strong></div>
     <div className="env-row"><span>BASE_URL</span><strong>{import.meta.env.BASE_URL}</strong></div>
-    <p className="demo-caption mt-6"><CircleHelp size={15} className="inline mr-1" />只有以 VITE_ 开头的自定义环境变量会暴露给客户端。</p>
+    <p className="demo-caption mt-6"><CircleHelp size={15} className="inline mr-1" />默认仅暴露以 VITE_ 开头的自定义环境变量；可通过 envPrefix 调整前缀。</p>
   </div>
 }
 
@@ -176,21 +178,25 @@ function ModuleDemo() {
   const [loading, setLoading] = useState(false)
   const load = async () => {
     setLoading(true)
-    const module = await import('./demoMessages.js')
-    setMessage(module.getGreeting())
-    setLoading(false)
+    try {
+      const module = await import('./demoMessages.js')
+      setMessage(module.getGreeting())
+    } catch { setMessage('模块加载失败，请检查网络后重试。') }
+    finally { setLoading(false) }
   }
   return <div className="demo-centered"><span className="demo-overline">DYNAMIC IMPORT</span><div className="module-icon">↗</div><h3 className="demo-title">按需加载一个模块</h3><p className="demo-caption mb-7">{message}</p><button className={solidButton} onClick={load} disabled={loading}>{loading ? '加载中...' : '加载模块'}</button></div>
 }
 
 export const groups = [
   { id: 'basics', title: 'React 基础', en: 'THE FOUNDATIONS', description: '从组件出发，理解界面如何由数据驱动。', topics: ['components', 'props', 'state', 'conditional', 'lists'] },
-  { id: 'advanced', title: 'React 进阶', en: 'GO A LITTLE DEEPER', description: '处理副作用、跨层传值、状态管理与 React 19 新能力。', topics: ['effect', 'context', 'redux', 'zustand', 'react19-hooks'] },
+  { id: 'advanced', title: 'React 进阶', en: 'GO A LITTLE DEEPER', description: '从引用与状态建模，走到复用、边界和现代 React 能力。', topics: ['effect', 'ref', 'reducer', 'custom-hooks', 'context', 'redux', 'zustand', 'portal', 'error-boundary', 'suspense', 'react19-hooks'] },
   { id: 'performance', title: '性能优化', en: 'MAKE IT FEEL FAST', description: '用缓存、非紧急更新与虚拟化改善交互体验。', topics: ['memo', 'callback', 'transition', 'virtual-list'] },
-  { id: 'vite', title: 'Vite 工程化', en: 'BUILD WITH VITE', description: '让开发与构建过程更轻快。', topics: ['env', 'modules'] },
+  { id: 'vite', title: 'Vite 工程化', en: 'BUILD WITH VITE', description: '基于 Vite 6，理解开发链路、配置联调与构建发布。', topics: ['vite-pipeline', 'vite-hmr', 'vite-config', 'env', 'vite-proxy', 'vite-assets', 'modules', 'vite-plugins', 'vite-build'] },
 ]
 
 export const topics = {
+  ...reactAdvancedTopics,
+  ...viteTopics,
   components: {
     group: 'basics', number: '01', title: '组件与 JSX', subtitle: '用小组件，组合出完整的界面。', time: '3 min',
     lead: 'React 组件是返回界面的 JavaScript 函数。JSX 让你在 JavaScript 中描述标签结构，再把组件像标签一样组合起来。',
@@ -308,18 +314,22 @@ export const topics = {
   },
   env: {
     group: 'vite', number: '15', title: '环境变量与模式', subtitle: '为不同运行环境配置不同数据。', time: '4 min',
-    lead: 'Vite 会通过 import.meta.env 暴露内建环境信息，并根据运行模式加载对应的 .env 文件。客户端自定义变量需要 VITE_ 前缀。',
-    points: ['import.meta.env.MODE 可读取当前模式。', 'import.meta.env.DEV 与 PROD 用于区分开发与生产。', 'VITE_ 变量会进入客户端构建产物，不能存放密钥。'],
+    lead: 'Vite 通过 import.meta.env 暴露内建环境信息，按 mode 加载 .env 文件。客户端自定义变量默认需要 VITE_ 前缀，值通常为字符串；构建时暴露的数据不是部署后自动更新的服务器配置。',
+    points: ['MODE 是模式名称；build --mode staging 通常仍是生产构建，不能只看模式名判断 DEV。', '模式专属文件优先于通用 .env；启动进程中已存在的变量优先级最高。修改文件后重启开发服务。', 'VITE_ 值会暴露给客户端，不可放私钥；数字和布尔值需显式转换与校验。'],
+    reference: 'https://v6.vite.dev/guide/env-and-mode',
     question: '为什么不能把 API 私钥写在 VITE_ 变量中？', answer: 'VITE_ 变量会被打包进客户端代码，任何访问页面的人都有机会读取。',
-    code: `function EnvironmentInfo() {\n  return (\n    <dl>\n      <dt>MODE</dt>\n      <dd>{import.meta.env.MODE}</dd>\n      <dt>DEV</dt>\n      <dd>{String(import.meta.env.DEV)}</dd>\n      <dt>BASE_URL</dt>\n      <dd>{import.meta.env.BASE_URL}</dd>\n    </dl>\n  );\n}\n\n// 自定义客户端变量须以 VITE_ 开头。`, Demo: EnvDemo,
+    code: `function EnvironmentInfo() {\n  return (\n    <dl>\n      <dt>MODE</dt>\n      <dd>{import.meta.env.MODE}</dd>\n      <dt>DEV</dt>\n      <dd>{String(import.meta.env.DEV)}</dd>\n      <dt>BASE_URL</dt>\n      <dd>{import.meta.env.BASE_URL}</dd>\n    </dl>\n  );\n}\n\n// 默认仅暴露 VITE_ 前缀的自定义变量；envPrefix 可调整前缀。`, Demo: EnvDemo,
   },
   modules: {
     group: 'vite', number: '16', title: '动态导入与拆包', subtitle: '需要时再加载，让入口更轻。', time: '4 min',
-    lead: 'import() 可以异步加载模块。Vite 在构建时会为动态导入创建独立代码块，浏览器在真正需要时再请求。',
+    lead: 'import() 可以异步加载模块。Vite 通常为可分离的动态导入生成异步代码块，让浏览器按需加载；若模块也被静态导入或受到分块配置影响，不能保证每个 import() 都对应一个独立文件。',
+    reference: 'https://v6.vite.dev/guide/features#dynamic-import',
     points: ['动态导入返回 Promise，可用 await 读取模块导出。', '适合低频功能、较大的工具模块或路由级拆包。', '加载中与失败状态也应该有清晰反馈。'],
     question: '静态 import 与动态 import() 有什么区别？', answer: '静态 import 在模块加载时就解析；动态 import() 在执行到该语句时才请求，并返回 Promise。',
-    code: `// demoMessages.js\nexport const getGreeting = () => '你好，模块已按需加载！';\n\n// App.jsx\nimport { useState } from 'react';\n\nexport default function LazyMessage() {\n  const [message, setMessage] = useState('尚未加载');\n\n  async function load() {\n    const module = await import('./demoMessages.js');\n    setMessage(module.getGreeting());\n  }\n\n  return (\n    <>\n      <p>{message}</p>\n      <button onClick={load}>加载模块</button>\n    </>\n  );\n}`, Demo: ModuleDemo,
+    code: `// demoMessages.js\nexport const getGreeting = () => '你好，模块已按需加载！';\n\n// App.jsx\nimport { useState } from 'react';\n\nexport default function LazyMessage() {\n  const [message, setMessage] = useState('尚未加载');\n  const [loading, setLoading] = useState(false);\n\n  async function load() {\n    setLoading(true);\n    try {\n      const module = await import('./demoMessages.js');\n      setMessage(module.getGreeting());\n    } catch {\n      setMessage('模块加载失败，请检查网络后重试。');\n    } finally {\n      setLoading(false);\n    }\n  }\n\n  return (\n    <>\n      <p>{message}</p>\n      <button onClick={load} disabled={loading}>\n        {loading ? '加载中...' : '加载模块'}\n      </button>\n    </>\n  );\n}`, Demo: ModuleDemo,
   },
 }
 
 export const topicOrder = groups.flatMap(group => group.topics)
+// Chapter numbers follow the displayed learning path; topic URLs stay stable.
+topicOrder.forEach((id, index) => { topics[id].number = String(index + 1).padStart(2, '0') })

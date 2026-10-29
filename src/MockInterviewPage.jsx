@@ -282,6 +282,7 @@ export default function MockInterviewPage() {
     {storageError && <p className="mi-error" role="alert">浏览器无法保存练习记录，刷新可能丢失本轮内容。完成后请先导出复盘。</p>}
 
     {showSetup ? <>
+      <a className="daily-entry" href="#/daily"><div><strong>今天先练一个小知识点</strong><p>每日一练 · 3 道递进题，从预测到动手验证</p></div><ArrowRight size={18} /></a>
       {session && <div className="mi-resume"><Save size={20} /><div><strong>{session.stage === 'review' ? '上一轮复盘已保存' : '接着上次的思路，继续练习'}</strong><p>{categoryName(session.category)} · {session.history.length} / {total} 题 · {session.stage === 'review' ? '已完成' : '草稿已保存'}</p></div><button className="mi-primary" onClick={() => { setShowSetup(false); setInspectIndex(null); setError('') }}>{session.stage === 'review' ? '查看复盘' : '继续练习'} <ArrowRight size={16} /></button></div>}
       <ReviewDashboard library={library} bank={archiveQuestions} count={count} mode={mode} onStart={() => start('weak')} onMastery={setMastery} />
       <div className="mi-setup-layout"><section className="mi-card">

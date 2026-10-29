@@ -2,6 +2,7 @@ import { extraCategories, extraReferences, extraQuestions } from './archiveQuest
 import { latestReferences, latestQuestions } from './archiveQuestions2026.js'
 import { browserReferences, browserQuestions } from './archiveQuestionsBrowser.js'
 import { socialReferences, socialQuestions } from './archiveQuestionsSocial.js'
+import { topicArchiveReferences, topicArchiveQuestions, topicArchiveLinks } from './archiveQuestionsTopics.js'
 
 // 常规题按备考方向整理；真题专题标明实际题目与改编练习的来源，不代表企业官方题库或频率统计。
 export const archiveCategories = [
@@ -63,6 +64,7 @@ export const archiveReferences = {
   ...latestReferences,
   ...browserReferences,
   ...socialReferences,
+  ...topicArchiveReferences,
 }
 
 const baseArchiveQuestions = [
@@ -473,6 +475,7 @@ const baseArchiveQuestions = [
       'Vite 开发期沿模块依赖图找到受影响模块及最近的 HMR 边界，仅让浏览器获取需要更新的模块，而不是重建整个开发 bundle。更新范围越局部，反馈通常越快。',
       'React 项目中的 Fast Refresh 由 React 集成提供，尝试在组件更新时保留兼容的本地状态。若组件签名变化或模块不再是安全边界，可能重置状态甚至回退到刷新。',
       '调试“改文件后整页刷新”时，要看模块的导出、插件处理和 HMR 边界，不应只归因于 Vite 启动速度。',
+      '模块级计时器或订阅需在 import.meta.hot.dispose 中释放，避免热更新残留旧资源；组件中的资源则通过 Effect cleanup 清理。缺少清理时，热更新可能让重复订阅的问题更明显。',
     ],
     followUp: '为什么修改一个组件的 Hook 顺序可能使本地状态无法保留？',
     refs: ['viteWhy', 'viteFeatures'],
@@ -484,6 +487,7 @@ const baseArchiveQuestions = [
       'MODE 是当前模式名称；DEV/PROD 是布尔环境标识。自定义 .env.[mode] 文件可按模式加载配置，读取时注意变量值通常是字符串，需要自行做类型转换。',
       '默认只有 VITE_ 前缀的自定义变量会暴露给客户端代码，构建时可能进入最终资源，任何访问页面的人都可能查看。API 私钥、数据库密码等必须留在服务端。',
       '修改 .env 后通常需要重启开发服务器。排查配置错误要同时确认模式、文件优先级、前缀和代码读取位置。',
+      '已存在的进程环境变量优先级最高；文件优先级通常为 .env.[mode].local > .env.[mode] > .env.local > .env。vite build --mode staging 加载 staging 文件，默认仍是生产构建；MODE 与 PROD 不应混为一谈。',
     ],
     example: 'const apiBase = import.meta.env.VITE_API_BASE;\nconst isDev = import.meta.env.DEV;\n// VITE_API_BASE 是公开配置，不应存放密钥',
     followUp: '为什么 .env.production 中的 VITE_TOKEN 仍不能当秘密？',
@@ -493,9 +497,10 @@ const baseArchiveQuestions = [
     id: 'vite-dynamic', category: 'vite', level: '实战', title: 'Vite 中 import() 的开发行为与生产拆包有什么不同？',
     brief: '开发期按需请求模块；生产期形成异步加载边界。',
     answer: [
-      '开发时 import() 在执行到该分支时请求对应模块，便于快速反馈；生产构建会把动态导入作为异步边界，输出相应 chunk，并在需要时加载。',
+      '开发时 import() 在执行到该分支时请求对应模块，便于快速反馈；生产构建通常以可分离的动态导入形成异步 chunk。若模块也被静态导入或受到分块配置影响，不能保证每次 import() 都对应一个独立文件。',
       '适合路由级页面、低频编辑器或图表等较大的功能；同时要给用户可见的 loading 与失败处理。把首屏立刻需要的代码都改成动态导入，可能制造额外请求瀑布。',
       '评估时看构建产物、首屏网络瀑布和真实交互延迟，不要仅以入口文件变小为成功标准。',
+      '部署后若旧页面请求已删除的 chunk，先检查 URL、状态码和 Content-Type；错误的 base、SPA 回退返回 HTML、缓存和网络也可能导致失败。合理保留旧资源、让 HTML 及时更新并提供刷新提示，比盲目重试更可靠。',
     ],
     example: 'async function openEditor() {\n  const { createEditor } = await import("./editor.js");\n  return createEditor();\n}',
     followUp: '如何处理部署后旧页面请求已被清理的异步 chunk？',
@@ -514,7 +519,7 @@ const baseArchiveQuestions = [
   },
 ]
 
-const allArchiveQuestions = [...baseArchiveQuestions, ...extraQuestions, ...latestQuestions, ...browserQuestions, ...socialQuestions]
+const allArchiveQuestions = [...baseArchiveQuestions, ...extraQuestions, ...latestQuestions, ...browserQuestions, ...socialQuestions, ...topicArchiveQuestions]
 export const archiveQuestions = archiveCategories.flatMap(category =>
   allArchiveQuestions.filter(question => question.category === category.id),
-)
+).map(question => topicArchiveLinks[question.id] ? { ...question, relatedTopic: topicArchiveLinks[question.id] } : question)

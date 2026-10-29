@@ -189,6 +189,7 @@ export const interviewQuestions = {
     },
   ],
   env: [
+    { question: '常见 .env 文件的优先级是什么？', answer: '同一 mode 下，.env.[mode].local 高于 .env.[mode]，后者高于通用 .env.local 与 .env；Vite 启动时进程中已存在的变量优先级更高。不要将私钥放进会向客户端暴露的 VITE_ 变量。' },
     {
       question: 'import.meta.env.MODE 与 import.meta.env.DEV 是同一个概念吗？',
       answer: '不是。MODE 是当前模式名称；DEV 表示当前构建是否处于开发环境。自定义模式名称与开发或生产环境可以分别配置。',
@@ -199,6 +200,7 @@ export const interviewQuestions = {
     },
   ],
   modules: [
+    { question: '动态导入路径能直接使用任意用户输入吗？', answer: '不能依赖构建工具收集任意路径。使用静态 import() 或 import.meta.glob 生成的受限映射并检查键值；变量导入的静态分析有边界，也要提供失败反馈。' },
     {
       question: 'import() 返回什么，加载失败该怎么处理？',
       answer: '它返回 Promise，成功后得到模块命名空间对象；网络或加载错误会使 Promise 拒绝，应使用 try/catch 提供失败反馈。',

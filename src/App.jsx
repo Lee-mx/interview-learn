@@ -7,11 +7,13 @@ import { virtualLibraryDemos } from './VirtualLibraryDemos.jsx'
 import { archiveCategories } from './archiveQuestions.js'
 import ArchivePage from './ArchivePage.jsx'
 import MockInterviewPage from './MockInterviewPage.jsx'
+import DailyPracticePage from './DailyPracticePage.jsx'
 
 function routeFromHash() {
   const value = window.location.hash.replace(/^#\/?/, '')
   if (value === 'about') return 'about'
   if (value === 'interview') return 'interview'
+  if (value === 'daily') return 'daily'
   if (value === 'archive') return 'archive'
   if (value === 'archive/byte-coding') {
     window.history.replaceState(null, '', '#/archive/interview-real')
@@ -56,6 +58,7 @@ function Header({ current, onNavigate }) {
           </div>
         </div>
         <button className={`about-nav ${current === 'interview' ? 'is-current' : ''}`} onClick={() => select('interview')}>模拟面试</button>
+        <button className={`about-nav ${current === 'daily' ? 'is-current' : ''}`} onClick={() => select('daily')}>每日一练</button>
         <button className={`about-nav ${current === 'about' ? 'is-current' : ''}`} onClick={() => select('about')}>关于</button>
       </nav>
       <div className="header-right"><span className="header-note"><span className="online-dot" /> 一起保持好奇</span><button className="header-start" onClick={() => select('components')}>开始探索 <ArrowUpRight size={15} /></button></div>
@@ -71,6 +74,7 @@ function Hero({ current, onNavigate }) {
         <div className="hero-eyebrow"><span className="hero-sun">✳</span> A LITTLE SPACE TO LEARN & GROW <span className="eyebrow-line" /></div>
         <h1>把知识点讲清楚，<br /><em>让代码</em><span className="highlight-word">跑起来<span className="scribble" /></span>。</h1>
         <p>一份轻盈的 React × Vite 面试学习手册。读懂核心概念，对照真实代码，再亲手点一点 Demo，让每个知识点都变得具体。</p>
+        <a className="daily-hero-link" href="#/daily">每天 10 分钟，从 3 道小题开始 <ArrowRight size={15} /></a>
         <div className="hero-actions"><button className="primary-cta" onClick={() => { onNavigate(current === 'about' ? 'components' : current); document.getElementById('learning-area')?.scrollIntoView({ behavior: 'smooth' }) }}>开始学习 <ArrowRight size={17} /></button><span>{topicOrder.length} 个知识点 <i /> {topicOrder.length + virtualLibraryDemos.length} 个互动示例</span></div>
       </div>
       <div className="hero-art" aria-hidden="true">
@@ -119,7 +123,7 @@ function Workspace({ topic }) {
     catch { setCopied(false) }
   }
   return <section className="workspace" aria-label="代码与效果展示">
-    <div className="workspace-header"><div><span className="workspace-activity"><span /> {conceptPreview ? 'VERSIONED CODE EXAMPLES' : 'INTERACTIVE PLAYGROUND'}</span><strong>{conceptPreview ? '读源码，辨使用场景。' : '看代码，也看它如何发生。'}</strong></div><div className="workspace-header-right"><span>{conceptPreview ? 'React 19 代码 · React 18 页面' : 'React + Vite'}</span><Code2 size={18} /></div></div>
+    <div className="workspace-header"><div><span className="workspace-activity"><span /> {conceptPreview ? 'CONFIGURATION & CONCEPTS' : 'INTERACTIVE PLAYGROUND'}</span><strong>{conceptPreview ? '读源码，辨使用场景。' : '看代码，也看它如何发生。'}</strong></div><div className="workspace-header-right"><span>{conceptPreview ? topic.previewLabel || 'React 19 代码 · React 18 页面' : 'React + Vite'}</span><Code2 size={18} /></div></div>
     <div className="workspace-grid">
       <div className="code-pane">
         <div className="pane-toolbar">
@@ -130,9 +134,9 @@ function Workspace({ topic }) {
           {files.map((file, index) => <button key={file.name} className={`shrink-0 rounded-md px-3 py-1.5 text-[11px] font-medium transition ${activeFile === index ? 'bg-[#dcecd5] text-[#315b46]' : 'text-[#78917c] hover:bg-[#edf3e7]'}`} aria-pressed={activeFile === index} onClick={() => { setActiveFile(index); setCopied(false) }}>{file.name}</button>)}
         </div>}
         <div className="code-scroll" key={selectedFile.name}><pre aria-label={`${selectedFile.name} 示例代码`}><code>{selectedFile.code.split('\n').map((line, index) => <CodeLine key={index} line={line} number={index + 1} />)}</code></pre></div>
-        <div className="code-bottom"><span><span className="code-status-dot" /> {selectedFile.name.endsWith('.jsx') ? 'JSX' : 'JS'}</span><span>UTF-8 <i /> React</span></div>
+        <div className="code-bottom"><span><span className="code-status-dot" /> {selectedFile.name.split('.').at(-1)?.toUpperCase()}</span><span>UTF-8 <i /> {topic.group === 'vite' ? 'Vite 6' : 'React'}</span></div>
       </div>
-      <div className="preview-pane"><div className="pane-toolbar preview-toolbar"><div className="preview-title"><Play size={14} fill="currentColor" /><span>{conceptPreview ? '概念导览' : '实时效果'}</span>{!conceptPreview && <span className="live-pill"><span /> LIVE</span>}</div><button className="toolbar-button preview-reset" onClick={() => { topic.resetDemo?.(); setPreviewKey(value => value + 1) }}><RotateCcw size={15} /> 重置示例</button></div><div className="preview-surface" key={previewKey}><Demo /></div><div className="preview-bottom"><span>{conceptPreview ? '场景示意：当前页面不会运行 React 19 Hook' : '试着点击、输入或切换，观察界面变化'}</span><Sparkles size={15} /></div></div>
+      <div className="preview-pane"><div className="pane-toolbar preview-toolbar"><div className="preview-title"><Play size={14} fill="currentColor" /><span>{conceptPreview ? '概念导览' : '实时效果'}</span>{!conceptPreview && <span className="live-pill"><span /> LIVE</span>}</div><button className="toolbar-button preview-reset" onClick={() => { topic.resetDemo?.(); setPreviewKey(value => value + 1) }}><RotateCcw size={15} /> 重置示例</button></div><div className="preview-surface" key={previewKey}><Demo /></div><div className="preview-bottom"><span>{conceptPreview ? topic.previewNote || '场景示意：当前页面不会运行 React 19 Hook' : '试着点击、输入或切换，观察界面变化'}</span><Sparkles size={15} /></div></div>
     </div>
   </section>
 }
@@ -176,11 +180,12 @@ function TopicPage({ id, onNavigate }) {
   useEffect(() => { setOpenQuestion(null) }, [id])
   const index = topicOrder.indexOf(id)
   const group = groups.find(item => item.id === topic.group)
-  const questions = [{ question: topic.question, answer: topic.answer }, ...interviewQuestions[id]]
+  const questions = [{ question: topic.question, answer: topic.answer }, ...(topic.followups?.map(([question, answer]) => ({ question, answer })) || interviewQuestions[id] || [])]
   return <article className="topic-content">
     <div className="breadcrumb"><span>知识点文案梳理 & Demo 演示</span><ChevronRight size={14} /><span>{group.title}</span><ChevronRight size={14} /><strong>{topic.title}</strong></div>
     <div className="topic-heading"><div><span className="chapter-label">CHAPTER {topic.number} <i /> {group.en}</span><h2>{topic.title}<span className="heading-star">✳</span></h2><p>{topic.subtitle}</p></div><div className="reading-time"><BookOpen size={17} /><span>{topic.time} 阅读</span></div></div>
     <div className="concept-card"><div className="concept-main"><span className="section-kicker"><span /> THE BIG IDEA</span><p>{topic.lead}</p></div><div className="concept-points"><span>记住这 3 件事</span>{topic.points.map((point, index) => <div key={point}><b>0{index + 1}</b><p>{point}</p></div>)}</div></div>
+    {topic.reference && <p className="topic-reference"><a href={topic.reference} target="_blank" rel="noreferrer">核对官方资料{topic.group === 'vite' ? ' · Vite 6 文档' : ' · React 文档'} ↗</a></p>}
     {topic.solutions && <Solutions solutions={topic.solutions} />}
     <div className="section-title-row"><div><span className="section-kicker"><span /> TRY IT YOURSELF</span><h3>动手看看，会更容易记住。</h3></div><span className="section-side-note">CODE <span>↔</span> PREVIEW</span></div>
     <Workspace topic={topic} />
@@ -224,19 +229,20 @@ export default function App() {
       else window.location.hash = hash
       return
     }
-    const hash = id === 'about' || id === 'interview' ? `#/${id}` : `#/topic/${id}`
+    const hash = ['about', 'interview', 'daily'].includes(id) ? `#/${id}` : `#/topic/${id}`
     if (window.location.hash === hash) setCurrent(id)
     else window.location.hash = hash
     document.getElementById('learning-area')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
   const isArchive = current === 'archive' || current.startsWith('archive/')
   const isInterview = current === 'interview'
+  const isDaily = current === 'daily'
   return <div className="app-shell">
     <Header current={current} onNavigate={navigate} />
     <main>
-      {!isArchive && !isInterview && <Hero current={current} onNavigate={navigate} />}
-      <div className={'content-shell' + (isArchive || isInterview ? ' archive-shell' : '')} id="learning-area">
-        {isArchive ? <ArchivePage categoryId={current.split('/')[1] || null} onSelectCategory={category => navigate(category ? 'archive/' + category : 'archive')} /> : isInterview ? <MockInterviewPage /> : <><Sidebar current={current} onNavigate={navigate} />{current === 'about' ? <AboutPage /> : <TopicPage id={current} onNavigate={navigate} />}</>}
+      {!isArchive && !isInterview && !isDaily && <Hero current={current} onNavigate={navigate} />}
+      <div className={'content-shell' + (isArchive || isInterview || isDaily ? ' archive-shell' : '')} id="learning-area">
+        {isDaily ? <DailyPracticePage /> : isArchive ? <ArchivePage categoryId={current.split('/')[1] || null} onSelectCategory={category => navigate(category ? 'archive/' + category : 'archive')} /> : isInterview ? <MockInterviewPage /> : <><Sidebar current={current} onNavigate={navigate} />{current === 'about' ? <AboutPage /> : <TopicPage id={current} onNavigate={navigate} />}</>}
       </div>
     </main>
     <Footer />
